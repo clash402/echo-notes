@@ -3,7 +3,7 @@
 **Voice-powered note-taking app that listens, thinks, and remembers.**
 Echo Notes turns your voice into clean, searchable summaries—powered by LLMs and built to think with you.
 
-&#x20;
+Try it out! https://echo-notes-one.vercel.app/
 
 ---
 
@@ -108,23 +108,58 @@ You’ll need API keys for:
 ## 💪 Setup
 
 ```bash
-# Clone the repo
-git clone https://github.com/joshcourtney/echo-notes.git
+# clone the repo
+git clone https://github.com/yourusername/echo-notes.git
+cd taskflow
 
-# Install backend requirements
+# set up environment variables
+cp .env.example .env
+```
+
+## 🚀 Running Locally
+
+You have several options to run the application locally:
+
+### Option 1: Run Everything Together (Recommended)
+```bash
+# Start both frontend and backend with Docker Compose
+./start.sh
+
+# Stop all services
+./stop.sh
+```
+
+### Option 2: Run Services Individually
+```bash
+# Start backend only
 cd backend
-pip install -r requirements.txt
+./start.sh
 
-# Install frontend requirements
+# Start frontend only (in a separate terminal)
 cd frontend
-npm install
+./start.sh
+```
+
+### Option 3: Manual Setup (Legacy)
+```bash
+# Install backend dependencies
+cd backend
+uv pip sync
 
 # Run backend
-uvicorn main:app --reload
+uvicorn src.main:app --reload
+
+# Install frontend dependencies (in a separate terminal)
+cd frontend
+npm install
 
 # Run frontend
 npm run dev
 ```
+
+**Access the application:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
 
 ---
 
