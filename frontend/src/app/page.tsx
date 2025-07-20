@@ -38,7 +38,7 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Echo Notes</h1>
-          <p className="text-gray-600">Record, transcribe, and organize your thoughts</p>
+          <p className="text-gray-600">Record, transcribe, and organize your thoughts!</p>
         </div>
 
         {/* Recorder Section */}
