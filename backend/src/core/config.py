@@ -27,7 +27,11 @@ class Settings(BaseSettings):
     max_file_size: int = 50 * 1024 * 1024  # 50MB
 
     # CORS Configuration
-    allowed_origins: list = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    allowed_origins: list = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://echo-notes-one.vercel.app",
+    ]
 
     # Logging
     log_level: str = "INFO"

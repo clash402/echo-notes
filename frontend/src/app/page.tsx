@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Recorder } from '@/components/DynamicRecorder';
 import { NoteCard } from '@/components/NoteCard';
 import { PlaybackBar } from '@/components/PlaybackBar';
@@ -10,6 +10,38 @@ import { Note } from '@/types';
 export default function Home() {
   const { notes, isLoading, error } = useNotes();
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+
+
+  // Get backend URL - use production URL in deployment, localhost for development
+  const getBackendUrl = () => {
+    // Check if we're in production (Vercel deployment)
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+      return 'https://echo-notes-backend.fly.dev';
+    }
+    // Local development
+    return 'http://localhost:8000';
+  };
+  
+  const backendUrl = getBackendUrl();
+  console.log('🔧 backendUrl from page.tsx:', backendUrl);
+  console.log('🔧 Current hostname:', typeof window !== 'undefined' ? window.location.hostname : 'server-side');
+
+  // Health check on component mount
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        console.log('🔍 Checking backend health...');
+        const response = await fetch(`${backendUrl}/health`);
+        const data = await response.json();
+        console.log('✅ Health check successful:', data);
+      } catch (error) {
+        console.error('❌ Health check failed:', error);
+      }
+    };
+
+    checkHealth();
+  }, [backendUrl]);
+
 
   const handlePlayNote = (note: Note) => {
     if (note.audioUrl) {
