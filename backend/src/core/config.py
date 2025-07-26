@@ -33,6 +33,19 @@ class Settings(BaseSettings):
         "https://echo-notes-one.vercel.app",
     ]
 
+    @property
+    def cors_origins(self) -> list:
+        """Get CORS origins from environment variable or default"""
+        import json
+
+        cors_env = os.getenv("CORS_ORIGINS")
+        if cors_env:
+            try:
+                return json.loads(cors_env)
+            except json.JSONDecodeError:
+                pass
+        return self.allowed_origins
+
     # Logging
     log_level: str = "INFO"
     log_file: Optional[str] = None
