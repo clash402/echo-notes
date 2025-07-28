@@ -5,6 +5,7 @@ export interface Note {
   audioUrl?: string;
   transcript?: string;
   summary?: string;
+  tags?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,4 +25,21 @@ export interface TranscriptionResult {
 export interface SummaryResult {
   summary: string;
   keyPoints: string[];
+}
+
+// New types for search and filter
+export interface SearchFilters {
+  query: string;
+  sortBy: 'newest' | 'oldest' | 'title';
+  tags: string[];
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+}
+
+export interface SearchResult {
+  notes: Note[];
+  total: number;
+  hasMore: boolean;
 } 

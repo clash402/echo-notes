@@ -4,13 +4,19 @@ import { useEffect, useState } from 'react';
 import { Recorder } from '@/components/DynamicRecorder';
 import { NoteCard } from '@/components/NoteCard';
 import { PlaybackBar } from '@/components/PlaybackBar';
+import { SearchAndFilter } from '@/components/SearchAndFilter';
 import { useNotes } from '@/hooks/useNotes';
-import { Note } from '@/types';
+import { Note, SearchFilters } from '@/types';
 
 export default function Home() {
-  const { notes, isLoading, error } = useNotes();
+  const [filters, setFilters] = useState<SearchFilters>({
+    query: '',
+    sortBy: 'newest',
+    tags: [],
+  });
+  
+  const { notes, total, isLoading, error } = useNotes(filters);
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
-
 
   // Get backend URL - use production URL in deployment, localhost for development
   const getBackendUrl = () => {
@@ -42,7 +48,6 @@ export default function Home() {
     checkHealth();
   }, [backendUrl]);
 
-
   const handlePlayNote = (note: Note) => {
     if (note.audioUrl) {
       setCurrentAudioUrl(note.audioUrl);
@@ -51,6 +56,10 @@ export default function Home() {
 
   const handleClosePlayback = () => {
     setCurrentAudioUrl(null);
+  };
+
+  const handleFiltersChange = (newFilters: SearchFilters) => {
+    setFilters(newFilters);
   };
 
   if (error) {
@@ -78,9 +87,19 @@ export default function Home() {
           <Recorder />
         </div>
 
+        {/* Search and Filter Section */}
+        <SearchAndFilter filters={filters} onFiltersChange={handleFiltersChange} />
+
         {/* Notes Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Notes</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-900">Your Notes</h2>
+            {total > 0 && (
+              <span className="text-sm text-gray-600">
+                {total} note{total !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
           
           {isLoading ? (
             <div className="text-center py-8">
@@ -89,7 +108,14 @@ export default function Home() {
             </div>
           ) : notes.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-600">No notes yet. Start recording to create your first note!</p>
+              {filters.query || filters.tags.length > 0 ? (
+                <div>
+                  <p className="text-gray-600 mb-2">No notes found matching your search criteria.</p>
+                  <p className="text-sm text-gray-500">Try adjusting your filters or search terms.</p>
+                </div>
+              ) : (
+                <p className="text-gray-600">No notes yet. Start recording to create your first note!</p>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
