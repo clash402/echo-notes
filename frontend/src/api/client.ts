@@ -1,4 +1,5 @@
-import { TranscriptionResult, SummaryResult, Note, SearchFilters, SearchResult } from '@/types';
+import { TranscriptionResult, SummaryResult, Note, SearchFilters, SearchResult, CostBreakdown, TokenUsage } from '@/types';
+import { calculateTotalCost } from '@/lib/costCalculator';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -120,7 +121,7 @@ export class ApiClient {
     return filteredNotes;
   }
 
-  async transcribeAudio(audioBlob: Blob): Promise<TranscriptionResult> {
+  async transcribeAudio(audioBlob: Blob, audioDurationSeconds: number = 0): Promise<TranscriptionResult & { costBreakdown: CostBreakdown }> {
     const formData = new FormData();
     formData.append('audio', audioBlob, 'recording.webm');
 
@@ -133,23 +134,39 @@ export class ApiClient {
       throw new Error(`Transcription failed: ${response.statusText}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    
+    // Calculate cost for transcription
+    const costBreakdown = calculateTotalCost(audioDurationSeconds, result.text || '');
+    
+    return {
+      ...result,
+      costBreakdown,
+    };
   }
 
-  async summarizeText(text: string): Promise<SummaryResult> {
+  async summarizeText(text: string, useGPT4: boolean = false): Promise<SummaryResult & { costBreakdown: CostBreakdown }> {
     const response = await fetch(`${this.baseUrl}/api/summarize`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, useGPT4 }),
     });
 
     if (!response.ok) {
       throw new Error(`Summarization failed: ${response.statusText}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    
+    // Calculate cost for summarization
+    const costBreakdown = calculateTotalCost(0, text, useGPT4);
+    
+    return {
+      ...result,
+      costBreakdown,
+    };
   }
 
   async saveNote(note: {

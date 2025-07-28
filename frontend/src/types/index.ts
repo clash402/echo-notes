@@ -42,4 +42,35 @@ export interface SearchResult {
   notes: Note[];
   total: number;
   hasMore: boolean;
+}
+
+// New types for token cost tracking
+export interface TokenUsage {
+  transcription: number;
+  summarization: number;
+  total: number;
+}
+
+export interface CostBreakdown {
+  transcription: {
+    tokens: number;
+    cost: number;
+  };
+  summarization: {
+    tokens: number;
+    cost: number;
+  };
+  total: {
+    tokens: number;
+    cost: number;
+  };
+}
+
+export interface ProcessingSession {
+  id: string;
+  audioDuration: number;
+  tokenUsage: TokenUsage;
+  costBreakdown: CostBreakdown;
+  status: 'processing' | 'completed' | 'error';
+  createdAt: Date;
 } 
