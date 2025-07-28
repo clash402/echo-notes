@@ -5,6 +5,9 @@ import { Recorder } from '@/components/DynamicRecorder';
 import { NoteCard } from '@/components/NoteCard';
 import { PlaybackBar } from '@/components/PlaybackBar';
 import { SearchAndFilter } from '@/components/SearchAndFilter';
+import { EditNoteModal } from '@/components/EditNoteModal';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { Toast } from '@/components/Toast';
 import { useNotes } from '@/hooks/useNotes';
 import { Note, SearchFilters } from '@/types';
 
@@ -15,8 +18,29 @@ export default function Home() {
     tags: [],
   });
   
-  const { notes, total, isLoading, error } = useNotes(filters);
+  const { 
+    notes, 
+    total, 
+    isLoading, 
+    error, 
+    updateNote, 
+    deleteNote, 
+    isUpdating, 
+    isDeleting 
+  } = useNotes(filters);
+  
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [deletingNote, setDeletingNote] = useState<Note | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error';
+    isVisible: boolean;
+  }>({
+    message: '',
+    type: 'success',
+    isVisible: false,
+  });
 
   // Get backend URL - use production URL in deployment, localhost for development
   const getBackendUrl = () => {
@@ -60,6 +84,49 @@ export default function Home() {
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
+  };
+
+  const handleEditNote = (note: Note) => {
+    setEditingNote(note);
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    const note = notes.find(n => n.id === noteId);
+    if (note) {
+      setDeletingNote(note);
+    }
+  };
+
+  const handleSaveNote = async (updates: Partial<Note>) => {
+    if (!editingNote) return;
+    
+    try {
+      await updateNote(editingNote.id, updates);
+      showToast('Note updated successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to update note:', error);
+      showToast('Failed to update note. Please try again.', 'error');
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingNote) return;
+    
+    try {
+      await deleteNote(deletingNote.id);
+      showToast('Note deleted successfully!', 'error');
+    } catch (error) {
+      console.error('Failed to delete note:', error);
+      showToast('Failed to delete note. Please try again.', 'error');
+    }
+  };
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type, isVisible: true });
+  };
+
+  const closeToast = () => {
+    setToast(prev => ({ ...prev, isVisible: false }));
   };
 
   if (error) {
@@ -124,8 +191,8 @@ export default function Home() {
                   key={note.id}
                   note={note}
                   onPlay={handlePlayNote}
-                  onEdit={(note: Note) => console.log('Edit note:', note)}
-                  onDelete={(noteId: string) => console.log('Delete note:', noteId)}
+                  onEdit={handleEditNote}
+                  onDelete={handleDeleteNote}
                 />
               ))}
             </div>
@@ -140,6 +207,32 @@ export default function Home() {
           onClose={handleClosePlayback}
         />
       )}
+
+      {/* Edit Note Modal */}
+      <EditNoteModal
+        note={editingNote}
+        isOpen={!!editingNote}
+        onClose={() => setEditingNote(null)}
+        onSave={handleSaveNote}
+        isLoading={isUpdating}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        note={deletingNote}
+        isOpen={!!deletingNote}
+        onClose={() => setDeletingNote(null)}
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
+      />
+
+      {/* Toast Notifications */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={closeToast}
+      />
     </div>
   );
 }

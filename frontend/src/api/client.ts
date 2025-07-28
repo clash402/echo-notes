@@ -175,6 +175,82 @@ export class ApiClient {
     return response.json();
   }
 
+  async updateNote(id: string, updates: {
+    title?: string;
+    content?: string;
+    tags?: string[];
+  }) {
+    // For now, simulate API call with dummy data
+    console.log('Updating note with dummy data:', { id, updates });
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Find and update the note in dummy data
+    const noteIndex = dummyNotes.findIndex(note => note.id === id);
+    if (noteIndex === -1) {
+      throw new Error('Note not found');
+    }
+
+    // Update the note
+    dummyNotes[noteIndex] = {
+      ...dummyNotes[noteIndex],
+      ...updates,
+      updatedAt: new Date(),
+    };
+
+    return dummyNotes[noteIndex];
+
+    // Original backend logic (commented out for now)
+    /*
+    const response = await fetch(`${this.baseUrl}/api/notes/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update note: ${response.statusText}`);
+    }
+
+    return response.json();
+    */
+  }
+
+  async deleteNote(id: string) {
+    // For now, simulate API call with dummy data
+    console.log('Deleting note with dummy data:', id);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Find and remove the note from dummy data
+    const noteIndex = dummyNotes.findIndex(note => note.id === id);
+    if (noteIndex === -1) {
+      throw new Error('Note not found');
+    }
+
+    // Remove the note
+    dummyNotes.splice(noteIndex, 1);
+
+    return { success: true };
+
+    // Original backend logic (commented out for now)
+    /*
+    const response = await fetch(`${this.baseUrl}/api/notes/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete note: ${response.statusText}`);
+    }
+
+    return response.json();
+    */
+  }
+
   async getNotes(filters?: SearchFilters): Promise<SearchResult> {
     // For now, always use dummy data to ensure the UI works
     // TODO: Remove this when backend is fully operational
