@@ -10,7 +10,7 @@ interface AudioVisualizerProps {
 
 export const AudioVisualizer = ({ stream, isRecording, className = '' }: AudioVisualizerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
 

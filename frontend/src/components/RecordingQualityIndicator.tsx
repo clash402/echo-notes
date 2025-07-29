@@ -12,7 +12,7 @@ export const RecordingQualityIndicator = ({ stream, isRecording }: RecordingQual
   const [quality, setQuality] = useState<'good' | 'poor' | 'no-signal' | null>(null);
   const [volume, setVolume] = useState(0);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!stream || !isRecording) {
