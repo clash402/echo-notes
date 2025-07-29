@@ -1,7 +1,10 @@
 // Audio recorder with dynamic imports to avoid SSR issues
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class AudioRecorder {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private recorder: any = null;
   private stream: MediaStream | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private RecordRTC: any = null;
 
   async startRecording(): Promise<void> {

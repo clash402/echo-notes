@@ -7,7 +7,7 @@ import { SearchAndFilter } from '@/components/SearchAndFilter';
 import { EditNoteModal } from '@/components/EditNoteModal';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { Toast, ToastType } from '@/components/Toast';
-import { VoiceSettings } from '@/components/VoiceSettings';
+import { VoiceSettingsModal } from '@/components/VoiceSettings';
 import { useNotes } from '@/hooks/useNotes';
 import { useVoiceOutput } from '@/hooks/useVoiceOutput';
 import { Note, SearchFilters } from '@/types';
@@ -231,7 +231,7 @@ export default function Home() {
         isLoading={isDeleting}
       />
 
-      <VoiceSettings
+      <VoiceSettingsModal
         isOpen={showVoiceSettings}
         onClose={() => setShowVoiceSettings(false)}
         onSettingsChange={updateVoiceSettings}

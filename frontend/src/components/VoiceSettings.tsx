@@ -60,7 +60,7 @@ const DUMMY_VOICES: ElevenLabsVoice[] = [
   }
 ];
 
-export const VoiceSettings = ({ 
+export const VoiceSettingsModal = ({ 
   isOpen, 
   onClose, 
   onSettingsChange, 
