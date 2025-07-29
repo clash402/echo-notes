@@ -94,8 +94,46 @@ export interface ElevenLabsVoice {
 }
 
 export interface VoicePreferences {
-  defaultVoice: string;
-  defaultSpeed: number;
-  defaultVolume: number;
-  autoPlay: boolean;
+  preferredVoiceId: string;
+  preferredSpeed: number;
+  preferredVolume: number;
+}
+
+export interface UserPreferences {
+  theme: 'light' | 'dark' | 'system';
+  autoSave: boolean;
+  keyboardShortcuts: boolean;
+  accessibility: {
+    highContrast: boolean;
+    reducedMotion: boolean;
+    fontSize: 'small' | 'medium' | 'large';
+    screenReader: boolean;
+  };
+  recording: {
+    autoStart: boolean;
+    quality: 'low' | 'medium' | 'high';
+    maxDuration: number; // in minutes
+  };
+  display: {
+    compactMode: boolean;
+    showTimestamps: boolean;
+    showCosts: boolean;
+    notesPerPage: number;
+  };
+}
+
+export interface KeyboardShortcut {
+  key: string;
+  description: string;
+  action: string;
+  category: 'navigation' | 'recording' | 'editing' | 'general';
+}
+
+export interface AccessibilitySettings {
+  enableKeyboardNavigation: boolean;
+  enableScreenReader: boolean;
+  enableHighContrast: boolean;
+  enableReducedMotion: boolean;
+  fontSize: 'small' | 'medium' | 'large';
+  focusIndicator: boolean;
 } 

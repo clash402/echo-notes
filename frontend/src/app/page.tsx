@@ -1,71 +1,107 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Mic, MicOff, Volume2, VolumeX, Settings, Sun, Moon, Monitor, Keyboard } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Recorder } from '@/components/Recorder';
-import { NoteCard } from '@/components/NoteCard';
 import { SearchAndFilter } from '@/components/SearchAndFilter';
+import { NoteCard } from '@/components/NoteCard';
 import { EditNoteModal } from '@/components/EditNoteModal';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
-import { Toast, ToastType } from '@/components/Toast';
+import { Toast } from '@/components/Toast';
 import { VoiceSettingsModal } from '@/components/VoiceSettings';
+import { SettingsModal } from '@/components/SettingsModal';
 import { NoteCardSkeletonGrid } from '@/components/NoteCardSkeleton';
 import { useInfiniteNotes } from '@/hooks/useNotes';
 import { useVoiceOutput } from '@/hooks/useVoiceOutput';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { Note, SearchFilters } from '@/types';
-import { Settings, Volume2, VolumeX, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { usePreferences } from '@/hooks/usePreferences';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import type { Note, SearchFilters } from '@/types';
 
 export default function Home() {
+  // State management
   const [filters, setFilters] = useState<SearchFilters>({
     query: '',
-    sortBy: 'newest',
     tags: [],
+    sortBy: 'newest'
   });
-
-  const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [deletingNote, setDeletingNote] = useState<Note | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [speakingNoteId, setSpeakingNoteId] = useState<string | null>(null);
 
-  const [toast, setToast] = useState<{
-    message: string;
-    type: ToastType;
-    isVisible: boolean;
-  }>({
-    message: '',
-    type: 'success',
-    isVisible: false,
-  });
+  // Hooks
+  const { notes, total, hasMore, isLoading, error, fetchNextPage, isFetchingNextPage, refetch } = useInfiniteNotes(filters);
+  const { voiceSettings, updateVoiceSettings, speakNote, testVoice, toggleVoiceOutput, isEnabled: voiceEnabled } = useVoiceOutput();
+  const { preferences, updatePreferences, toggleTheme, isLoaded: preferencesLoaded } = usePreferences();
 
-  const { 
-    notes,
-    total,
-    hasMore,
-    isLoading,
-    error,
-    fetchNextPage,
-    isFetchingNextPage,
-    refetch
-  } = useInfiniteNotes(filters, 6); // Load 6 notes at a time
-
-  const {
-    voiceSettings,
-    updateVoiceSettings,
-    speakNote,
-    testVoice,
-    isLoading: isVoiceLoading,
-    isEnabled: voiceEnabled
-  } = useVoiceOutput();
-
-  // Infinite scroll hook
+  // Infinite scroll
   const { loadingRef } = useInfiniteScroll({
     hasMore,
     isLoading: isFetchingNextPage,
     onLoadMore: fetchNextPage,
   });
 
+  // Keyboard shortcuts
+  const handleShortcutAction = (action: string) => {
+    switch (action) {
+      case 'start-recording':
+        // Focus on recorder start button
+        document.querySelector('[data-action="start-recording"]')?.focus();
+        break;
+      case 'stop-recording':
+        // Focus on recorder stop button
+        document.querySelector('[data-action="stop-recording"]')?.focus();
+        break;
+      case 'focus-search':
+        // Focus on search input
+        document.querySelector('[data-action="search-input"]')?.focus();
+        break;
+      case 'focus-filter':
+        // Focus on filter dropdown
+        document.querySelector('[data-action="filter-dropdown"]')?.focus();
+        break;
+      case 'go-home':
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        break;
+      case 'show-shortcuts':
+        setShowSettings(true);
+        break;
+      case 'toggle-theme':
+        toggleTheme();
+        break;
+      case 'toggle-voice':
+        toggleVoiceOutput();
+        break;
+      case 'open-note':
+        // Focus on first note card
+        document.querySelector('[data-action="note-card"]')?.focus();
+        break;
+      case 'edit-note':
+        // Focus on first edit button
+        document.querySelector('[data-action="edit-note"]')?.focus();
+        break;
+      case 'delete-note':
+        // Focus on first delete button
+        document.querySelector('[data-action="delete-note"]')?.focus();
+        break;
+      case 'play-note':
+        // Focus on first play button
+        document.querySelector('[data-action="play-note"]')?.focus();
+        break;
+    }
+  };
+
+  useKeyboardShortcuts({
+    enabled: preferences.keyboardShortcuts,
+    onShortcut: handleShortcutAction,
+  });
+
+  // Event handlers
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
   };
@@ -78,28 +114,24 @@ export default function Home() {
     setDeletingNote(note);
   };
 
-  const handleSaveNote = async (updatedNote: Partial<Note>) => {
-    if (!editingNote) return;
-
+  const handleSaveNote = async (note: Note) => {
     try {
-      // For now, simulate update since we're using dummy data
-      console.log('Updating note:', { id: editingNote.id, ...updatedNote });
-      showToast('Note updated successfully!', 'success');
-      // Refetch to update the list
+      // This would call the actual API in production
+      console.log('Saving note:', note);
+      setEditingNote(null);
+      showToast('Note updated successfully', 'success');
       refetch();
     } catch (error) {
       showToast('Failed to update note', 'error');
     }
   };
 
-  const handleConfirmDelete = async () => {
-    if (!deletingNote) return;
-
+  const handleConfirmDelete = async (note: Note) => {
     try {
-      // For now, simulate delete since we're using dummy data
-      console.log('Deleting note:', deletingNote.id);
-      showToast('Note deleted successfully!', 'error');
-      // Refetch to update the list
+      // This would call the actual API in production
+      console.log('Deleting note:', note);
+      setDeletingNote(null);
+      showToast('Note deleted successfully', 'error');
       refetch();
     } catch (error) {
       showToast('Failed to delete note', 'error');
@@ -107,194 +139,245 @@ export default function Home() {
   };
 
   const handleSpeakNote = async (note: Note) => {
+    if (!voiceEnabled) {
+      showToast('Voice output is disabled', 'error');
+      return;
+    }
+
     setSpeakingNoteId(note.id);
     try {
       await speakNote(note);
+      showToast('Voice output completed', 'success');
     } catch (error) {
-      showToast('Failed to read note aloud', 'error');
+      showToast('Failed to generate speech', 'error');
     } finally {
       setSpeakingNoteId(null);
     }
   };
 
-  const handleTestVoice = async (text: string) => {
+  const handleTestVoice = async (testText?: string) => {
     try {
-      await testVoice(text);
-      showToast('Voice test completed!', 'success');
+      await testVoice(testText);
+      showToast('Voice test completed', 'success');
     } catch (error) {
       showToast('Voice test failed', 'error');
     }
   };
 
   const showToast = (message: string, type: ToastType) => {
-    setToast({ message, type, isVisible: true });
+    setToast({ message, type });
   };
 
   const closeToast = () => {
-    setToast(prev => ({ ...prev, isVisible: false }));
+    setToast(null);
   };
 
+  // Don't render until preferences are loaded
+  if (!preferencesLoaded) {
+    return <NoteCardSkeletonGrid count={6} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Echo Notes</h1>
-            <p className="text-gray-600">Transform your voice into organized notes with AI</p>
-          </div>
-
-          {/* Voice Controls */}
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <Button
-              variant={voiceEnabled ? "default" : "outline"}
-              onClick={() => updateVoiceSettings({ enabled: !voiceEnabled })}
-              className="flex items-center gap-2"
-            >
-              {voiceEnabled ? (
-                <>
-                  <Volume2 className="w-4 h-4" />
-                  Voice Enabled
-                </>
-              ) : (
-                <>
-                  <VolumeX className="w-4 h-4" />
-                  Voice Disabled
-                </>
-              )}
-            </Button>
-            
-            <Button
-              variant="outline"
-              onClick={() => setShowVoiceSettings(true)}
-              className="flex items-center gap-2"
-            >
-              <Settings className="w-4 h-4" />
-              Voice Settings
-            </Button>
-          </div>
-
-          {/* Recorder */}
-          <Recorder />
-
-          {/* Search and Filter */}
-          <SearchAndFilter filters={filters} onFiltersChange={handleFiltersChange} />
-
-          {/* Notes Section */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-gray-900">
-                {total} note{total !== 1 ? 's' : ''}
-              </h2>
-            </div>
-
-            {isLoading ? (
-              <NoteCardSkeletonGrid count={6} />
-            ) : error ? (
-              <div className="text-center py-8">
-                <p className="text-red-600">Failed to load notes</p>
-                <Button 
-                  onClick={() => refetch()} 
-                  variant="outline" 
-                  className="mt-4"
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Echo Notes</h1>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  aria-label="Toggle theme"
                 >
-                  Try Again
+                  {preferences.theme === 'light' && <Sun className="w-5 h-5" />}
+                  {preferences.theme === 'dark' && <Moon className="w-5 h-5" />}
+                  {preferences.theme === 'system' && <Monitor className="w-5 h-5" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSettings(true)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  aria-label="Settings"
+                >
+                  <Settings className="w-5 h-5" />
                 </Button>
               </div>
-            ) : notes.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">
-                  {filters.query || filters.tags.length > 0
-                    ? 'No notes match your search criteria'
-                    : 'No notes yet. Start recording to create your first note!'}
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="grid gap-6 md:grid-cols-2">
-                  {notes.map((note) => (
-                    <NoteCard
-                      key={note.id}
-                      note={note}
-                      onEdit={handleEditNote}
-                      onDelete={(noteId: string) => {
-                        const note = notes.find(n => n.id === noteId);
-                        if (note) handleDeleteNote(note);
-                      }}
-                      onSpeak={handleSpeakNote}
-                      isSpeaking={speakingNoteId === note.id}
-                      voiceEnabled={voiceEnabled}
-                    />
-                  ))}
-                </div>
+            </div>
 
-                {/* Infinite Scroll Loading */}
-                {hasMore && (
-                  <div 
-                    ref={loadingRef}
-                    className="flex justify-center py-8"
-                  >
-                    {isFetchingNextPage ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                        <span className="text-gray-600">Loading more notes...</span>
-                      </div>
-                    ) : (
-                      <Button 
-                        onClick={() => fetchNextPage()}
-                        variant="outline"
-                        className="flex items-center gap-2"
-                      >
-                        Load More Notes
-                      </Button>
-                    )}
-                  </div>
-                )}
-
-                {/* End of list indicator */}
-                {!hasMore && notes.length > 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 text-sm">You&apos;ve reached the end of your notes</p>
-                  </div>
-                )}
-              </>
-            )}
+            {/* Voice Controls */}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleVoiceOutput}
+                className={`flex items-center space-x-2 ${
+                  voiceEnabled 
+                    ? 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300' 
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
+                aria-label={voiceEnabled ? 'Disable voice output' : 'Enable voice output'}
+              >
+                {voiceEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                <span className="hidden sm:inline">{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowVoiceSettings(true)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                aria-label="Voice settings"
+              >
+                <Volume2 className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Recorder Section */}
+        <div className="mb-8">
+          <Recorder />
+        </div>
+
+        {/* Search and Filter */}
+        <div className="mb-6">
+          <SearchAndFilter filters={filters} onFiltersChange={handleFiltersChange} />
+        </div>
+
+        {/* Notes Grid */}
+        <div className="space-y-6">
+          {isLoading ? (
+            <NoteCardSkeletonGrid count={6} />
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">Failed to load notes</p>
+              <Button onClick={() => refetch()} variant="outline">
+                Try Again
+              </Button>
+            </div>
+          ) : notes.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-400 dark:text-gray-500 mb-4">
+                <Mic className="w-16 h-16 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No notes yet</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Start recording to create your first note
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-6 md:grid-cols-2">
+                {notes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onEdit={handleEditNote}
+                    onDelete={handleDeleteNote}
+                    onSpeak={handleSpeakNote}
+                    isSpeaking={speakingNoteId === note.id}
+                    voiceEnabled={voiceEnabled}
+                  />
+                ))}
+              </div>
+
+              {/* Load More */}
+              {hasMore && (
+                <div className="text-center py-8">
+                  <Button
+                    onClick={fetchNextPage}
+                    disabled={isFetchingNextPage}
+                    variant="outline"
+                    className="w-full max-w-md"
+                  >
+                    {isFetchingNextPage ? 'Loading more notes...' : 'Load More Notes'}
+                  </Button>
+                </div>
+              )}
+
+              {/* End of notes indicator */}
+              {!hasMore && notes.length > 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">You&apos;ve reached the end of your notes</p>
+                </div>
+              )}
+
+              {/* Infinite scroll trigger */}
+              <div ref={loadingRef} className="h-4" />
+            </>
+          )}
+        </div>
+      </main>
 
       {/* Modals */}
-      <EditNoteModal
-        note={editingNote}
-        isOpen={!!editingNote}
-        onClose={() => setEditingNote(null)}
-        onSave={handleSaveNote}
-        isLoading={false}
-      />
+      {editingNote && (
+        <EditNoteModal
+          note={editingNote}
+          isOpen={!!editingNote}
+          onClose={() => setEditingNote(null)}
+          onSave={handleSaveNote}
+          isLoading={false}
+        />
+      )}
 
-      <DeleteConfirmDialog
-        note={deletingNote}
-        isOpen={!!deletingNote}
-        onClose={() => setDeletingNote(null)}
-        onConfirm={handleConfirmDelete}
-        isLoading={false}
-      />
+      {deletingNote && (
+        <DeleteConfirmDialog
+          note={deletingNote}
+          isOpen={!!deletingNote}
+          onClose={() => setDeletingNote(null)}
+          onConfirm={handleConfirmDelete}
+          isLoading={false}
+        />
+      )}
 
-      <VoiceSettingsModal
-        isOpen={showVoiceSettings}
-        onClose={() => setShowVoiceSettings(false)}
-        onSettingsChange={updateVoiceSettings}
-        currentSettings={voiceSettings}
-        onTestVoice={handleTestVoice}
-      />
+      {showVoiceSettings && (
+        <VoiceSettingsModal
+          isOpen={showVoiceSettings}
+          onClose={() => setShowVoiceSettings(false)}
+          onSettingsChange={updateVoiceSettings}
+          currentSettings={voiceSettings}
+          onTestVoice={handleTestVoice}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          preferences={preferences}
+          onPreferencesChange={updatePreferences}
+          shortcuts={[
+            { key: 'n', description: 'New recording', action: 'start-recording', category: 'recording' },
+            { key: 'Escape', description: 'Stop recording', action: 'stop-recording', category: 'recording' },
+            { key: 's', description: 'Search notes', action: 'focus-search', category: 'navigation' },
+            { key: 'f', description: 'Filter notes', action: 'focus-filter', category: 'navigation' },
+            { key: 'h', description: 'Go home', action: 'go-home', category: 'navigation' },
+            { key: '?', description: 'Show shortcuts', action: 'show-shortcuts', category: 'general' },
+            { key: 't', description: 'Toggle theme', action: 'toggle-theme', category: 'general' },
+            { key: 'v', description: 'Toggle voice', action: 'toggle-voice', category: 'general' },
+            { key: 'Enter', description: 'Open note', action: 'open-note', category: 'editing' },
+            { key: 'Delete', description: 'Delete note', action: 'delete-note', category: 'editing' },
+            { key: 'e', description: 'Edit note', action: 'edit-note', category: 'editing' },
+            { key: 'p', description: 'Play note', action: 'play-note', category: 'editing' },
+          ]}
+          onShortcutAction={handleShortcutAction}
+        />
+      )}
 
       {/* Toast */}
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.isVisible}
-        onClose={closeToast}
-      />
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={closeToast}
+        />
+      )}
     </div>
   );
 }
