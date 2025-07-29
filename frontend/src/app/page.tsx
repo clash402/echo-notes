@@ -8,10 +8,12 @@ import { EditNoteModal } from '@/components/EditNoteModal';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { Toast, ToastType } from '@/components/Toast';
 import { VoiceSettingsModal } from '@/components/VoiceSettings';
-import { useNotes } from '@/hooks/useNotes';
+import { NoteCardSkeletonGrid } from '@/components/NoteCardSkeleton';
+import { useInfiniteNotes } from '@/hooks/useNotes';
 import { useVoiceOutput } from '@/hooks/useVoiceOutput';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Note, SearchFilters } from '@/types';
-import { Settings, Volume2, VolumeX } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
@@ -40,13 +42,13 @@ export default function Home() {
   const { 
     notes,
     total,
+    hasMore,
     isLoading,
     error,
-    updateNote,
-    deleteNote,
-    isUpdating,
-    isDeleting
-  } = useNotes(filters);
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch
+  } = useInfiniteNotes(filters, 6); // Load 6 notes at a time
 
   const {
     voiceSettings,
@@ -56,6 +58,13 @@ export default function Home() {
     isLoading: isVoiceLoading,
     isEnabled: voiceEnabled
   } = useVoiceOutput();
+
+  // Infinite scroll hook
+  const { loadingRef } = useInfiniteScroll({
+    hasMore,
+    isLoading: isFetchingNextPage,
+    onLoadMore: fetchNextPage,
+  });
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
@@ -73,8 +82,11 @@ export default function Home() {
     if (!editingNote) return;
 
     try {
-      await updateNote(editingNote.id, updatedNote);
+      // For now, simulate update since we're using dummy data
+      console.log('Updating note:', { id: editingNote.id, ...updatedNote });
       showToast('Note updated successfully!', 'success');
+      // Refetch to update the list
+      refetch();
     } catch (error) {
       showToast('Failed to update note', 'error');
     }
@@ -84,8 +96,11 @@ export default function Home() {
     if (!deletingNote) return;
 
     try {
-      await deleteNote(deletingNote.id);
+      // For now, simulate delete since we're using dummy data
+      console.log('Deleting note:', deletingNote.id);
       showToast('Note deleted successfully!', 'error');
+      // Refetch to update the list
+      refetch();
     } catch (error) {
       showToast('Failed to delete note', 'error');
     }
@@ -118,8 +133,6 @@ export default function Home() {
   const closeToast = () => {
     setToast(prev => ({ ...prev, isVisible: false }));
   };
-
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -176,13 +189,17 @@ export default function Home() {
             </div>
 
             {isLoading ? (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="mt-2 text-gray-600">Loading notes...</p>
-              </div>
+              <NoteCardSkeletonGrid count={6} />
             ) : error ? (
               <div className="text-center py-8">
                 <p className="text-red-600">Failed to load notes</p>
+                <Button 
+                  onClick={() => refetch()} 
+                  variant="outline" 
+                  className="mt-4"
+                >
+                  Try Again
+                </Button>
               </div>
             ) : notes.length === 0 ? (
               <div className="text-center py-8">
@@ -193,22 +210,54 @@ export default function Home() {
                 </p>
               </div>
             ) : (
-              <div className="grid gap-6 md:grid-cols-2">
-                {notes.map((note) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    onEdit={handleEditNote}
-                    onDelete={(noteId: string) => {
-                      const note = notes.find(n => n.id === noteId);
-                      if (note) handleDeleteNote(note);
-                    }}
-                    onSpeak={handleSpeakNote}
-                    isSpeaking={speakingNoteId === note.id}
-                    voiceEnabled={voiceEnabled}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {notes.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onEdit={handleEditNote}
+                      onDelete={(noteId: string) => {
+                        const note = notes.find(n => n.id === noteId);
+                        if (note) handleDeleteNote(note);
+                      }}
+                      onSpeak={handleSpeakNote}
+                      isSpeaking={speakingNoteId === note.id}
+                      voiceEnabled={voiceEnabled}
+                    />
+                  ))}
+                </div>
+
+                {/* Infinite Scroll Loading */}
+                {hasMore && (
+                  <div 
+                    ref={loadingRef}
+                    className="flex justify-center py-8"
+                  >
+                    {isFetchingNextPage ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                        <span className="text-gray-600">Loading more notes...</span>
+                      </div>
+                    ) : (
+                      <Button 
+                        onClick={() => fetchNextPage()}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        Load More Notes
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {/* End of list indicator */}
+                {!hasMore && notes.length > 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 text-sm">You&apos;ve reached the end of your notes</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -220,7 +269,7 @@ export default function Home() {
         isOpen={!!editingNote}
         onClose={() => setEditingNote(null)}
         onSave={handleSaveNote}
-        isLoading={isUpdating}
+        isLoading={false}
       />
 
       <DeleteConfirmDialog
@@ -228,7 +277,7 @@ export default function Home() {
         isOpen={!!deletingNote}
         onClose={() => setDeletingNote(null)}
         onConfirm={handleConfirmDelete}
-        isLoading={isDeleting}
+        isLoading={false}
       />
 
       <VoiceSettingsModal

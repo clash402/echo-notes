@@ -1,366 +1,393 @@
-import { TranscriptionResult, SummaryResult, Note, SearchFilters, SearchResult, CostBreakdown, TokenUsage } from '@/types';
+import { Note, SearchFilters, SearchResult, CostBreakdown, TokenUsage } from '@/types';
 import { calculateTotalCost } from '@/lib/costCalculator';
 import { getAllAvailableTags } from '@/lib/tagGenerator';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-// Debug logging
-console.log('API_BASE_URL:', API_BASE_URL);
-console.log('NEXT_PUBLIC_API_URL env var:', process.env.NEXT_PUBLIC_API_URL);
-
-// Dummy data for development
+// Dummy notes for development
 const dummyNotes: Note[] = [
   {
     id: '1',
-    title: 'Project Ideas for Q1',
-    content: 'Need to focus on user experience improvements and mobile optimization.',
-    transcript: 'I was thinking about our project ideas for Q1. We really need to focus on user experience improvements and mobile optimization. The current app is good but could be much better.',
-    summary: 'Planning Q1 projects focusing on UX improvements and mobile optimization.',
-    tags: ['project', 'planning', 'ux'],
+    title: 'Project Planning Meeting',
+    content: 'Discussed the new feature roadmap for Q2. Key priorities include user authentication improvements and mobile app development. Team agreed on sprint planning for next week.',
     audioUrl: '/api/audio/1',
+    transcript: 'Discussed the new feature roadmap for Q2. Key priorities include user authentication improvements and mobile app development.',
+    summary: 'Q2 roadmap planning with focus on auth improvements and mobile development.',
+    tags: ['work', 'meeting', 'planning'],
     createdAt: new Date('2024-01-15T10:30:00Z'),
     updatedAt: new Date('2024-01-15T10:30:00Z'),
   },
   {
     id: '2',
-    title: 'Meeting Notes - Team Sync',
-    content: 'Discussed new feature requirements and timeline for the upcoming sprint.',
-    transcript: 'In today\'s team sync, we discussed the new feature requirements and timeline for the upcoming sprint. Everyone seems to be on the same page about priorities.',
-    summary: 'Team sync meeting covering new feature requirements and sprint timeline.',
-    tags: ['meeting', 'team', 'sprint'],
+    title: 'Grocery Shopping List',
+    content: 'Need to buy milk, bread, eggs, and vegetables. Also need to pick up some cleaning supplies and toiletries. Remember to check for any sales or coupons.',
     audioUrl: '/api/audio/2',
-    createdAt: new Date('2024-01-14T14:20:00Z'),
-    updatedAt: new Date('2024-01-14T14:20:00Z'),
+    transcript: 'Need to buy milk, bread, eggs, and vegetables. Also need to pick up some cleaning supplies and toiletries.',
+    summary: 'Grocery shopping list including dairy, produce, and household items.',
+    tags: ['personal', 'shopping'],
+    createdAt: new Date('2024-01-14T16:45:00Z'),
+    updatedAt: new Date('2024-01-14T16:45:00Z'),
   },
   {
     id: '3',
-    title: 'Code Architecture Thoughts',
-    content: 'Considering microservices approach for better scalability and maintenance.',
-    transcript: 'I\'ve been thinking about our code architecture. We might want to consider a microservices approach for better scalability and maintenance. It would require some upfront work but could pay off long-term.',
-    summary: 'Exploring microservices architecture for improved scalability and maintenance.',
-    tags: ['architecture', 'technical', 'scalability'],
+    title: 'Code Review Notes',
+    content: 'Reviewed the authentication middleware implementation. Found several security issues that need to be addressed. The JWT token validation logic needs improvement.',
     audioUrl: '/api/audio/3',
-    createdAt: new Date('2024-01-13T16:45:00Z'),
-    updatedAt: new Date('2024-01-13T16:45:00Z'),
+    transcript: 'Reviewed the authentication middleware implementation. Found several security issues that need to be addressed.',
+    summary: 'Security issues found in auth middleware, JWT validation needs improvement.',
+    tags: ['technical', 'code', 'security'],
+    createdAt: new Date('2024-01-13T14:20:00Z'),
+    updatedAt: new Date('2024-01-13T14:20:00Z'),
   },
   {
     id: '4',
-    title: 'User Feedback Summary',
-    content: 'Users want faster loading times and better search functionality.',
-    transcript: 'Looking at the user feedback we\'ve received, the main complaints are about loading times and search functionality. Users want things to be faster and easier to find.',
-    summary: 'User feedback highlights need for faster loading and improved search.',
-    tags: ['feedback', 'users', 'performance'],
+    title: 'Book Recommendations',
+    content: 'Interested in reading more about machine learning and AI. Looking for books that explain complex concepts in simple terms. Also want to explore some fiction for leisure reading.',
     audioUrl: '/api/audio/4',
+    transcript: 'Interested in reading more about machine learning and AI. Looking for books that explain complex concepts in simple terms.',
+    summary: 'Seeking ML/AI books and fiction recommendations for learning and leisure.',
+    tags: ['personal', 'learning', 'books'],
     createdAt: new Date('2024-01-12T09:15:00Z'),
     updatedAt: new Date('2024-01-12T09:15:00Z'),
   },
   {
     id: '5',
-    title: 'Personal Goals for 2024',
-    content: 'Focus on learning new technologies and improving leadership skills.',
-    transcript: 'For 2024, I want to focus on learning new technologies, especially around AI and machine learning. I also want to improve my leadership skills and mentor more junior developers.',
-    summary: 'Personal development goals: learn new tech (AI/ML) and improve leadership.',
-    tags: ['personal', 'goals', 'learning'],
+    title: 'Fitness Goals',
+    content: 'Want to improve overall fitness and strength. Plan to work out 3-4 times per week. Focus on compound movements and progressive overload. Need to track nutrition as well.',
     audioUrl: '/api/audio/5',
-    createdAt: new Date('2024-01-10T11:00:00Z'),
-    updatedAt: new Date('2024-01-10T11:00:00Z'),
+    transcript: 'Want to improve overall fitness and strength. Plan to work out 3-4 times per week. Focus on compound movements.',
+    summary: 'Fitness goals: 3-4 workouts weekly, compound movements, nutrition tracking.',
+    tags: ['personal', 'fitness', 'goals'],
+    createdAt: new Date('2024-01-11T18:30:00Z'),
+    updatedAt: new Date('2024-01-11T18:30:00Z'),
+  },
+  {
+    id: '6',
+    title: 'Travel Planning',
+    content: 'Planning a trip to Japan for next spring. Want to visit Tokyo, Kyoto, and Osaka. Need to research best times to visit, accommodation options, and must-see attractions.',
+    audioUrl: '/api/audio/6',
+    transcript: 'Planning a trip to Japan for next spring. Want to visit Tokyo, Kyoto, and Osaka.',
+    summary: 'Japan travel planning for spring: Tokyo, Kyoto, Osaka with research needed.',
+    tags: ['personal', 'travel', 'planning'],
+    createdAt: new Date('2024-01-10T12:00:00Z'),
+    updatedAt: new Date('2024-01-10T12:00:00Z'),
+  },
+  {
+    id: '7',
+    title: 'Team Retrospective',
+    content: 'Had our quarterly team retrospective. Discussed what went well, what could be improved, and action items for next quarter. Communication and documentation were highlighted as areas for improvement.',
+    audioUrl: '/api/audio/7',
+    transcript: 'Had our quarterly team retrospective. Discussed what went well, what could be improved, and action items for next quarter.',
+    summary: 'Quarterly team retrospective with focus on communication and documentation improvements.',
+    tags: ['work', 'meeting', 'retrospective'],
+    createdAt: new Date('2024-01-09T15:30:00Z'),
+    updatedAt: new Date('2024-01-09T15:30:00Z'),
+  },
+  {
+    id: '8',
+    title: 'Recipe Ideas',
+    content: 'Want to try making homemade pasta and pizza from scratch. Need to research recipes, buy ingredients, and practice techniques. Also interested in learning to make sourdough bread.',
+    audioUrl: '/api/audio/8',
+    transcript: 'Want to try making homemade pasta and pizza from scratch. Need to research recipes, buy ingredients, and practice techniques.',
+    summary: 'Cooking goals: homemade pasta, pizza, and sourdough bread recipes.',
+    tags: ['personal', 'cooking', 'recipes'],
+    createdAt: new Date('2024-01-08T19:45:00Z'),
+    updatedAt: new Date('2024-01-08T19:45:00Z'),
+  },
+  {
+    id: '9',
+    title: 'Database Optimization',
+    content: 'Need to optimize the database queries for better performance. Current queries are taking too long to execute. Should implement proper indexing and consider query optimization techniques.',
+    audioUrl: '/api/audio/9',
+    transcript: 'Need to optimize the database queries for better performance. Current queries are taking too long to execute.',
+    summary: 'Database optimization needed: indexing and query performance improvements.',
+    tags: ['technical', 'database', 'performance'],
+    createdAt: new Date('2024-01-07T11:20:00Z'),
+    updatedAt: new Date('2024-01-07T11:20:00Z'),
+  },
+  {
+    id: '10',
+    title: 'Language Learning Goals',
+    content: 'Want to improve my Spanish speaking skills. Plan to practice daily for 30 minutes using language apps and conversation partners. Focus on vocabulary building and grammar practice.',
+    audioUrl: '/api/audio/10',
+    transcript: 'Want to improve my Spanish speaking skills. Plan to practice daily for 30 minutes using language apps.',
+    summary: 'Spanish learning goals: daily practice, vocabulary, and grammar improvement.',
+    tags: ['personal', 'learning', 'language'],
+    createdAt: new Date('2024-01-06T14:15:00Z'),
+    updatedAt: new Date('2024-01-06T14:15:00Z'),
+  },
+  {
+    id: '11',
+    title: 'Product Feature Ideas',
+    content: 'Brainstorming new features for our product. Ideas include dark mode, offline support, advanced search filters, and integration with third-party tools. Need to prioritize based on user feedback.',
+    audioUrl: '/api/audio/11',
+    transcript: 'Brainstorming new features for our product. Ideas include dark mode, offline support, advanced search filters.',
+    summary: 'Product feature ideas: dark mode, offline support, search filters, integrations.',
+    tags: ['work', 'product', 'features'],
+    createdAt: new Date('2024-01-05T16:30:00Z'),
+    updatedAt: new Date('2024-01-05T16:30:00Z'),
+  },
+  {
+    id: '12',
+    title: 'Home Improvement Projects',
+    content: 'Planning several home improvement projects for the year. Want to repaint the living room, update the kitchen backsplash, and install new lighting fixtures. Need to budget and schedule the work.',
+    audioUrl: '/api/audio/12',
+    transcript: 'Planning several home improvement projects for the year. Want to repaint the living room, update the kitchen backsplash.',
+    summary: 'Home improvement projects: painting, kitchen updates, lighting installation.',
+    tags: ['personal', 'home', 'improvement'],
+    createdAt: new Date('2024-01-04T10:00:00Z'),
+    updatedAt: new Date('2024-01-04T10:00:00Z'),
   },
 ];
 
-export class ApiClient {
+// Helper function to filter and sort notes
+const filterAndSortNotes = (
+  notes: Note[],
+  filters: SearchFilters,
+  page: number = 1,
+  limit: number = 10
+): SearchResult => {
+  let filteredNotes = [...notes];
+
+  // Apply search query filter
+  if (filters.query.trim()) {
+    const query = filters.query.toLowerCase();
+    filteredNotes = filteredNotes.filter(note =>
+      note.title.toLowerCase().includes(query) ||
+      note.content.toLowerCase().includes(query) ||
+      note.tags?.some(tag => tag.toLowerCase().includes(query)) ||
+      note.transcript?.toLowerCase().includes(query) ||
+      note.summary?.toLowerCase().includes(query)
+    );
+  }
+
+  // Apply tag filters
+  if (filters.tags.length > 0) {
+    filteredNotes = filteredNotes.filter(note =>
+      filters.tags.every(tag => note.tags?.includes(tag))
+    );
+  }
+
+  // Apply date range filter
+  if (filters.dateRange) {
+    filteredNotes = filteredNotes.filter(note => {
+      const noteDate = new Date(note.createdAt);
+      return noteDate >= filters.dateRange!.start && noteDate <= filters.dateRange!.end;
+    });
+  }
+
+  // Apply sorting
+  switch (filters.sortBy) {
+    case 'oldest':
+      filteredNotes.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      break;
+    case 'title':
+      filteredNotes.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    case 'newest':
+    default:
+      filteredNotes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      break;
+  }
+
+  // Apply pagination
+  const total = filteredNotes.length;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedNotes = filteredNotes.slice(startIndex, endIndex);
+  const hasMore = endIndex < total;
+
+  return {
+    notes: paginatedNotes,
+    total,
+    hasMore,
+  };
+};
+
+class ApiClient {
   private baseUrl: string;
 
-  constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || API_BASE_URL;
+  constructor() {
+    // Check if we're in production (Vercel deployment)
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+      this.baseUrl = 'https://echo-notes-backend.fly.dev';
+    } else {
+      // Local development
+      this.baseUrl = 'http://localhost:8000';
+    }
   }
 
-  // Helper method to filter and sort notes
-  private filterAndSortNotes(notes: Note[], filters: SearchFilters): Note[] {
-    let filteredNotes = [...notes];
-
-    // Apply search query
-    if (filters.query.trim()) {
-      const query = filters.query.toLowerCase();
-      filteredNotes = filteredNotes.filter(note => 
-        note.title.toLowerCase().includes(query) ||
-        note.content.toLowerCase().includes(query) ||
-        note.transcript?.toLowerCase().includes(query) ||
-        note.summary?.toLowerCase().includes(query) ||
-        note.tags?.some(tag => tag.toLowerCase().includes(query))
-      );
+  async getNotes(filters?: SearchFilters, page: number = 1, limit: number = 10): Promise<SearchResult> {
+    try {
+      // For development, always use dummy data
+      console.log('🔧 Using dummy data for development');
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      return filterAndSortNotes(dummyNotes, filters || { query: '', sortBy: 'newest', tags: [] }, page, limit);
+    } catch (error) {
+      console.error('Failed to fetch notes:', error);
+      // Fallback to dummy data
+      return filterAndSortNotes(dummyNotes, filters || { query: '', sortBy: 'newest', tags: [] }, page, limit);
     }
-
-    // Apply tag filter
-    if (filters.tags.length > 0) {
-      filteredNotes = filteredNotes.filter(note =>
-        note.tags?.some(tag => filters.tags.includes(tag))
-      );
-    }
-
-    // Apply date range filter
-    if (filters.dateRange) {
-      filteredNotes = filteredNotes.filter(note => {
-        const noteDate = new Date(note.createdAt);
-        return noteDate >= filters.dateRange!.start && noteDate <= filters.dateRange!.end;
-      });
-    }
-
-    // Apply sorting
-    switch (filters.sortBy) {
-      case 'oldest':
-        filteredNotes.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-        break;
-      case 'title':
-        filteredNotes.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'newest':
-      default:
-        filteredNotes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-    }
-
-    return filteredNotes;
   }
 
-  async transcribeAudio(audioBlob: Blob, audioDurationSeconds: number = 0): Promise<TranscriptionResult & { costBreakdown: CostBreakdown }> {
-    const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.webm');
-
-    const response = await fetch(`${this.baseUrl}/api/transcribe`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Transcription failed: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    
-    // Calculate cost for transcription
-    const costBreakdown = calculateTotalCost(audioDurationSeconds, result.text || '');
-    
-    return {
-      ...result,
-      costBreakdown,
-    };
-  }
-
-  async summarizeText(text: string, useGPT4: boolean = false): Promise<SummaryResult & { costBreakdown: CostBreakdown }> {
-    const response = await fetch(`${this.baseUrl}/api/summarize`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ text, useGPT4 }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Summarization failed: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    
-    // Calculate cost for summarization
-    const costBreakdown = calculateTotalCost(0, text, useGPT4);
-    
-    return {
-      ...result,
-      costBreakdown,
-    };
-  }
-
-  async saveNote(note: {
+  async saveNote(noteData: {
     title: string;
     content: string;
     audioUrl?: string;
     transcript?: string;
     summary?: string;
     tags?: string[];
-  }) {
-    const response = await fetch(`${this.baseUrl}/api/notes`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(note),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to save note: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  async updateNote(id: string, updates: {
-    title?: string;
-    content?: string;
-    tags?: string[];
-  }) {
-    // For now, simulate API call with dummy data
-    console.log('Updating note with dummy data:', { id, updates });
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Find and update the note in dummy data
-    const noteIndex = dummyNotes.findIndex(note => note.id === id);
-    if (noteIndex === -1) {
-      throw new Error('Note not found');
-    }
-
-    // Update the note
-    dummyNotes[noteIndex] = {
-      ...dummyNotes[noteIndex],
-      ...updates,
-      updatedAt: new Date(),
-    };
-
-    return dummyNotes[noteIndex];
-
-    // Original backend logic (commented out for now)
-    /*
-    const response = await fetch(`${this.baseUrl}/api/notes/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updates),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to update note: ${response.statusText}`);
-    }
-
-    return response.json();
-    */
-  }
-
-  async deleteNote(id: string) {
-    // For now, simulate API call with dummy data
-    console.log('Deleting note with dummy data:', id);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Find and remove the note from dummy data
-    const noteIndex = dummyNotes.findIndex(note => note.id === id);
-    if (noteIndex === -1) {
-      throw new Error('Note not found');
-    }
-
-    // Remove the note
-    dummyNotes.splice(noteIndex, 1);
-
-    return { success: true };
-
-    // Original backend logic (commented out for now)
-    /*
-    const response = await fetch(`${this.baseUrl}/api/notes/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to delete note: ${response.statusText}`);
-    }
-
-    return response.json();
-    */
-  }
-
-  async getNotes(filters?: SearchFilters): Promise<SearchResult> {
-    // For now, always use dummy data to ensure the UI works
-    // TODO: Remove this when backend is fully operational
-    console.log('Using dummy data for development');
-    
-    const defaultFilters: SearchFilters = {
-      query: '',
-      sortBy: 'newest',
-      tags: [],
-    };
-
-    const appliedFilters = filters || defaultFilters;
-    const filteredNotes = this.filterAndSortNotes(dummyNotes, appliedFilters);
-
-    return {
-      notes: filteredNotes,
-      total: filteredNotes.length,
-      hasMore: false,
-    };
-
-    // Original backend logic (commented out for now)
-    /*
+  }): Promise<Note> {
     try {
-      if (!this.baseUrl) {
-        console.warn('baseUrl is undefined, using fallback');
-        this.baseUrl = 'http://localhost:8000';
-      }
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      const response = await fetch(`${this.baseUrl}/api/notes`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch notes: ${response.statusText}`);
-      }
-
-      return response.json();
-    } catch (error) {
-      // Return dummy data if backend is not available
-      console.warn('Backend not available, returning dummy data:', error);
-      
-      const defaultFilters: SearchFilters = {
-        query: '',
-        sortBy: 'newest',
-        tags: [],
+      const newNote: Note = {
+        id: Date.now().toString(),
+        ...noteData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
+      
+      // Add to dummy data
+      dummyNotes.unshift(newNote);
+      
+      return newNote;
+    } catch (error) {
+      console.error('Failed to save note:', error);
+      throw error;
+    }
+  }
 
-      const appliedFilters = filters || defaultFilters;
-      const filteredNotes = this.filterAndSortNotes(dummyNotes, appliedFilters);
-
+  async transcribeAudio(audioBlob: Blob): Promise<{
+    text: string;
+    confidence: number;
+    costBreakdown: CostBreakdown;
+  }> {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const mockTranscript = "This is a simulated transcript of the audio recording. In a real implementation, this would be generated by OpenAI's Whisper API.";
+      const mockConfidence = 0.95;
+      
+      // Simulate cost calculation
+      const costBreakdown = calculateTotalCost(30, mockTranscript); // Assume 30 seconds
+      
       return {
-        notes: filteredNotes,
-        total: filteredNotes.length,
-        hasMore: false,
+        text: mockTranscript,
+        confidence: mockConfidence,
+        costBreakdown,
       };
-    }
-    */
-  }
-
-  async getNote(id: string) {
-    const response = await fetch(`${this.baseUrl}/api/notes/${id}`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch note: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  // Get all available tags for filter dropdown
-  async getAvailableTags(): Promise<string[]> {
-    // For now, always use tag generator to ensure the UI works
-    // TODO: Remove this when backend is fully operational
-    console.log('Using tag generator for development');
-    
-    return getAllAvailableTags();
-
-    // Original backend logic (commented out for now)
-    /*
-    try {
-      const response = await fetch(`${this.baseUrl}/api/tags`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch tags: ${response.statusText}`);
-      }
-
-      return response.json();
     } catch (error) {
-      // Return tag generator tags if backend is not available
-      console.warn('Backend not available, returning tag generator tags:', error);
+      console.error('Failed to transcribe audio:', error);
+      throw error;
+    }
+  }
+
+  async summarizeText(text: string): Promise<{
+    summary: string;
+    keyPoints: string[];
+    costBreakdown: CostBreakdown;
+  }> {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const mockSummary = "This is a simulated summary of the provided text. In a real implementation, this would be generated by OpenAI's GPT API.";
+      const mockKeyPoints = [
+        "Key point 1 from the text",
+        "Key point 2 from the text",
+        "Key point 3 from the text"
+      ];
+      
+      // Simulate cost calculation
+      const costBreakdown = calculateTotalCost(0, text, true); // Use GPT-4 for summarization
+      
+      return {
+        summary: mockSummary,
+        keyPoints: mockKeyPoints,
+        costBreakdown,
+      };
+    } catch (error) {
+      console.error('Failed to summarize text:', error);
+      throw error;
+    }
+  }
+
+  async updateNote(id: string, updates: Partial<Note>): Promise<Note> {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const noteIndex = dummyNotes.findIndex(note => note.id === id);
+      if (noteIndex === -1) {
+        throw new Error('Note not found');
+      }
+      
+      const updatedNote = {
+        ...dummyNotes[noteIndex],
+        ...updates,
+        updatedAt: new Date(),
+      };
+      
+      dummyNotes[noteIndex] = updatedNote;
+      return updatedNote;
+    } catch (error) {
+      console.error('Failed to update note:', error);
+      throw error;
+    }
+  }
+
+  async deleteNote(id: string): Promise<void> {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const noteIndex = dummyNotes.findIndex(note => note.id === id);
+      if (noteIndex === -1) {
+        throw new Error('Note not found');
+      }
+      
+      dummyNotes.splice(noteIndex, 1);
+    } catch (error) {
+      console.error('Failed to delete note:', error);
+      throw error;
+    }
+  }
+
+  async getNote(id: string): Promise<Note> {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const note = dummyNotes.find(note => note.id === id);
+      if (!note) {
+        throw new Error('Note not found');
+      }
+      
+      return note;
+    } catch (error) {
+      console.error('Failed to fetch note:', error);
+      throw error;
+    }
+  }
+
+  async getAvailableTags(): Promise<string[]> {
+    try {
+      // For development, always use tag generator
+      console.log('🔧 Using tag generator for development');
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       return getAllAvailableTags();
+    } catch (error) {
+      console.error('Failed to fetch tags:', error);
+      // Fallback to tag generator
+      return getAllAvailableTags();
     }
-    */
   }
 }
 

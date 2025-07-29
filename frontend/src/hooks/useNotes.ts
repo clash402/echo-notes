@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { SearchFilters, SearchResult, Note } from '@/types';
 
-export const useNotes = (filters?: SearchFilters) => {
+export const useNotes = (filters?: SearchFilters, page: number = 1, limit: number = 10) => {
   const queryClient = useQueryClient();
 
   const {
@@ -11,8 +11,8 @@ export const useNotes = (filters?: SearchFilters) => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['notes', filters],
-    queryFn: () => apiClient.getNotes(filters),
+    queryKey: ['notes', filters, page, limit],
+    queryFn: () => apiClient.getNotes(filters, page, limit),
     retry: false,
     refetchOnWindowFocus: false,
   });
@@ -71,6 +71,43 @@ export const useNotes = (filters?: SearchFilters) => {
     isCreating: createNoteMutation.isPending,
     isUpdating: updateNoteMutation.isPending,
     isDeleting: deleteNoteMutation.isPending,
+  };
+};
+
+// Hook for infinite scrolling
+export const useInfiniteNotes = (filters?: SearchFilters, limit: number = 10) => {
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ['infinite-notes', filters, limit],
+    queryFn: ({ pageParam = 1 }) => apiClient.getNotes(filters, pageParam, limit),
+    getNextPageParam: (lastPage, pages) => {
+      if (!lastPage.hasMore) return undefined;
+      return pages.length + 1;
+    },
+    initialPageParam: 1,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const allNotes = data?.pages.flatMap(page => page.notes) || [];
+  const total = data?.pages[0]?.total || 0;
+
+  return {
+    notes: allNotes,
+    total,
+    hasMore: hasNextPage,
+    isLoading,
+    error,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch,
   };
 };
 
