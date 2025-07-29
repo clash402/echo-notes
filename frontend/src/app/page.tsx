@@ -194,15 +194,15 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen transition-colors duration-200" style={{ backgroundColor: 'hsl(var(--background))' }}>
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <header className="sticky top-0 z-50 shadow-sm border-b" style={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
         <div className="w-full px-6">
           <div className="flex items-center justify-between h-16">
             {/* Left side - Logo */}
             <div className="flex items-center space-x-2">
-              <Mic className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Echo Notes</h1>
+              <Mic className="w-8 h-8" style={{ color: 'hsl(158 64% 52%)' }} />
+              <h1 className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>Echo Notes</h1>
             </div>
 
             {/* Right side - Voice controls and settings */}
@@ -211,11 +211,10 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={toggleVoiceOutput}
-                className={`flex items-center space-x-2 ${
-                  voiceEnabled 
-                    ? 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300' 
-                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                }`}
+                className="flex items-center space-x-2"
+                style={{ 
+                  color: voiceEnabled ? 'hsl(158 64% 52%)' : 'hsl(var(--muted-foreground))'
+                }}
                 aria-label={voiceEnabled ? 'Disable voice output' : 'Enable voice output'}
               >
                 {voiceEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
@@ -226,7 +225,8 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSettings(true)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="hover:opacity-80"
+                style={{ color: 'hsl(var(--muted-foreground))' }}
                 aria-label="Settings"
               >
                 <Settings className="w-5 h-5" />
@@ -237,6 +237,8 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        
         {/* Recorder Section */}
         <div className="mb-8">
           <Recorder />
@@ -253,19 +255,19 @@ export default function Home() {
             <NoteCardSkeletonGrid count={6} />
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 mb-4">Failed to load notes</p>
+              <p className="mb-4" style={{ color: 'hsl(var(--muted-foreground))' }}>Failed to load notes</p>
               <Button onClick={() => refetch()} variant="outline">
                 Try Again
               </Button>
             </div>
           ) : notes.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-gray-400 dark:text-gray-500 mb-4">
+              <div className="mb-4" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 <Mic className="w-16 h-16 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No notes yet</h3>
-                <p className="text-gray-500 dark:text-gray-400">
-                  Start recording to create your first note
-                </p>
+                                  <h3 className="text-lg font-medium mb-2" style={{ color: 'hsl(var(--foreground))' }}>No notes yet</h3>
+                                  <p style={{ color: 'hsl(var(--muted-foreground))' }}>
+                    Start recording to create your first note
+                  </p>
               </div>
             </div>
           ) : (
@@ -304,7 +306,7 @@ export default function Home() {
               {/* End of notes indicator */}
               {!hasMore && notes.length > 0 && (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">You&apos;ve reached the end of your notes</p>
+                  <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>You&apos;ve reached the end of your notes</p>
                 </div>
               )}
 
@@ -316,35 +318,35 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="sticky bottom-0 bg-white dark:bg-gray-800 py-6 border-t border-gray-200 dark:border-gray-700">
+      <footer className="sticky bottom-0 py-6 border-t" style={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
         <div className="w-full px-6">
-          <div className="flex flex-col items-center justify-center text-sm text-gray-500 dark:text-gray-400 space-y-2">
+          <div className="flex flex-col items-center justify-center text-sm space-y-2" style={{ color: 'hsl(var(--muted-foreground))' }}>
             <div>
               © 2025 Josh Courtney. All rights reserved.
             </div>
             <div className="flex items-center space-x-6">
-              <a 
-                href="https://joshcourtney.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-              >
+                                  <a 
+                      href="https://joshcourtney.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-colors"
+                    >
                 My Site
               </a>
-              <a 
-                href="https://github.com/clash402" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-              >
+                                  <a 
+                      href="https://github.com/clash402" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-colors"
+                    >
                 GitHub
               </a>
-              <a 
-                href="https://www.linkedin.com/in/joshcourtney402/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-              >
+                                  <a 
+                      href="https://www.linkedin.com/in/joshcourtney402/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-colors"
+                    >
                 LinkedIn
               </a>
             </div>

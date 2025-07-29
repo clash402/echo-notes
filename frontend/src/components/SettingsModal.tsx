@@ -64,25 +64,26 @@ export const SettingsModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
           <div className="flex items-center space-x-3">
-            <Settings className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Settings</h2>
+            <Settings className="w-6 h-6 text-emerald-600" />
+            <h2 className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>Settings</h2>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="hover:opacity-80"
+            style={{ color: 'hsl(var(--muted-foreground))' }}
           >
             <X className="w-5 h-5" />
           </Button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <div className="flex border-b overflow-x-auto" style={{ borderColor: 'hsl(var(--border))' }}>
           {[
             { id: 'general', label: 'General', icon: Settings },
             { id: 'accessibility', label: 'Accessibility', icon: Accessibility },
@@ -96,9 +97,14 @@ export const SettingsModal = ({
                onClick={() => setActiveTab(id as 'general' | 'accessibility' | 'shortcuts' | 'recording' | 'display')}
                className={`flex items-center space-x-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === id
-                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                  ? 'border-emerald-600 text-emerald-600'
+                  : 'border-transparent hover:opacity-80'
               }`}
+              style={{ 
+                color: activeTab === id 
+                  ? 'hsl(158 64% 52%)' 
+                  : 'hsl(var(--foreground))'
+              }}
             >
               <Icon className="w-4 h-4" />
               <span>{label}</span>
@@ -111,7 +117,7 @@ export const SettingsModal = ({
           {activeTab === 'general' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Theme</h3>
+                <h3 className="text-lg font-medium mb-4" style={{ color: 'hsl(var(--foreground))' }}>Theme</h3>
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'light', label: 'Light', icon: Sun },
@@ -123,12 +129,20 @@ export const SettingsModal = ({
                        onClick={() => updatePreferences({ theme: value as 'light' | 'dark' | 'system' })}
                        className={`flex flex-col items-center p-4 rounded-lg border-2 transition-colors ${
                         preferences.theme === value
-                          ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                          ? 'border-emerald-600'
+                          : 'hover:opacity-80'
                       }`}
+                      style={{
+                        backgroundColor: preferences.theme === value 
+                          ? 'hsl(158 64% 52% / 0.1)' 
+                          : 'transparent',
+                        borderColor: preferences.theme === value 
+                          ? 'hsl(158 64% 52%)' 
+                          : 'hsl(var(--border))'
+                      }}
                     >
-                      <Icon className="w-6 h-6 mb-2 text-gray-600 dark:text-gray-400" />
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">{label}</span>
+                                              <Icon className="w-6 h-6 mb-2" style={{ color: 'hsl(var(--muted-foreground))' }} />
+                      <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>{label}</span>
                     </button>
                   ))}
                 </div>
@@ -137,27 +151,27 @@ export const SettingsModal = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Auto-save</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Automatically save changes</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>Auto-save</h4>
+                    <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Automatically save changes</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={preferences.autoSave}
                     onChange={(e) => updatePreferences({ autoSave: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Keyboard shortcuts</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Enable keyboard navigation</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>Keyboard shortcuts</h4>
+                    <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Enable keyboard navigation</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={preferences.keyboardShortcuts}
                     onChange={(e) => updatePreferences({ keyboardShortcuts: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
               </div>
@@ -169,46 +183,46 @@ export const SettingsModal = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">High contrast</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Increase color contrast</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>High contrast</h4>
+                    <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Increase color contrast</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={preferences.accessibility.highContrast}
                     onChange={(e) => updateAccessibility({ highContrast: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Reduced motion</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Disable animations</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>Reduced motion</h4>
+                    <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Disable animations</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={preferences.accessibility.reducedMotion}
                     onChange={(e) => updateAccessibility({ reducedMotion: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Screen reader support</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Enable ARIA labels</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>Screen reader support</h4>
+                    <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Enable ARIA labels</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={preferences.accessibility.screenReader}
                     onChange={(e) => updateAccessibility({ screenReader: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
               </div>
 
               <div>
-                <h4 className="font-medium text-gray-900 dark:text-white mb-3">Font size</h4>
+                <h4 className="font-medium mb-3" style={{ color: 'hsl(var(--foreground))' }}>Font size</h4>
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'small', label: 'Small' },
@@ -220,11 +234,19 @@ export const SettingsModal = ({
                        onClick={() => updateAccessibility({ fontSize: value as 'small' | 'medium' | 'large' })}
                        className={`px-4 py-2 rounded-lg border-2 transition-colors ${
                         preferences.accessibility.fontSize === value
-                          ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                          ? 'border-emerald-600'
+                          : 'hover:opacity-80'
                       }`}
+                      style={{
+                        backgroundColor: preferences.accessibility.fontSize === value 
+                          ? 'hsl(158 64% 52% / 0.1)' 
+                          : 'transparent',
+                        borderColor: preferences.accessibility.fontSize === value 
+                          ? 'hsl(158 64% 52%)' 
+                          : 'hsl(var(--border))'
+                      }}
                     >
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">{label}</span>
+                      <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>{label}</span>
                     </button>
                   ))}
                 </div>
@@ -234,31 +256,39 @@ export const SettingsModal = ({
 
           {activeTab === 'shortcuts' && (
             <div className="space-y-6">
-              <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              <div className="text-sm mb-4" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Press the keys to test shortcuts. Click any shortcut to trigger its action.
               </div>
               
               {Object.entries(categories).map(([category, categoryShortcuts]) => (
                 <div key={category}>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 capitalize">
+                  <h3 className="text-lg font-medium mb-3 capitalize" style={{ color: 'hsl(var(--foreground))' }}>
                     {category}
                   </h3>
                   <div className="space-y-2">
                     {categoryShortcuts.map((shortcut) => (
                       <div
                         key={shortcut.action}
-                        className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                        className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:opacity-80"
+                        style={{ 
+                          borderColor: 'hsl(var(--border))',
+                          backgroundColor: 'transparent'
+                        }}
                         onClick={() => onShortcutAction?.(shortcut.action)}
                       >
                         <div>
-                          <div className="font-medium text-gray-900 dark:text-white">
+                          <div className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                             {shortcut.description}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                          <div className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
                             {shortcut.action}
                           </div>
                         </div>
-                        <kbd className="px-2 py-1 text-sm font-mono bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded border">
+                        <kbd className="px-2 py-1 text-sm font-mono rounded border" style={{ 
+                          backgroundColor: 'hsl(var(--muted))',
+                          color: 'hsl(var(--foreground))',
+                          borderColor: 'hsl(var(--border))'
+                        }}>
                           {shortcut.key}
                         </kbd>
                       </div>
@@ -274,19 +304,19 @@ export const SettingsModal = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Auto-start recording</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Start recording immediately when page loads</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>Auto-start recording</h4>
+                    <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Start recording immediately when page loads</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={preferences.recording.autoStart}
                     onChange={(e) => updateRecording({ autoStart: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">Recording quality</h4>
+                  <h4 className="font-medium mb-3" style={{ color: 'hsl(var(--foreground))' }}>Recording quality</h4>
                   <div className="grid grid-cols-3 gap-3">
                     {[
                       { value: 'low', label: 'Low' },
@@ -298,18 +328,26 @@ export const SettingsModal = ({
                        onClick={() => updateRecording({ quality: value as 'low' | 'medium' | 'high' })}
                        className={`px-4 py-2 rounded-lg border-2 transition-colors ${
                           preferences.recording.quality === value
-                            ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                            ? 'border-emerald-600'
+                            : 'hover:opacity-80'
                         }`}
+                        style={{
+                          backgroundColor: preferences.recording.quality === value 
+                            ? 'hsl(158 64% 52% / 0.1)' 
+                            : 'transparent',
+                          borderColor: preferences.recording.quality === value 
+                            ? 'hsl(158 64% 52%)' 
+                            : 'hsl(var(--border))'
+                        }}
                       >
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">{label}</span>
+                        <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>{label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                  <h4 className="font-medium mb-3" style={{ color: 'hsl(var(--foreground))' }}>
                     Maximum recording duration: {preferences.recording.maxDuration} minutes
                   </h4>
                   <Slider
@@ -330,48 +368,48 @@ export const SettingsModal = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Compact mode</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Show more notes in less space</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>Compact mode</h4>
+                                          <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Show more notes in less space</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={preferences.display.compactMode}
                     onChange={(e) => updateDisplay({ compactMode: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Show timestamps</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Display creation and update times</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>Show timestamps</h4>
+                                          <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Display creation and update times</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={preferences.display.showTimestamps}
                     onChange={(e) => updateDisplay({ showTimestamps: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Show costs</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Display AI processing costs</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>Show costs</h4>
+                                          <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Display AI processing costs</p>
                   </div>
                   <input
                     type="checkbox"
                     checked={preferences.display.showCosts}
                     onChange={(e) => updateDisplay({ showCosts: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
               </div>
 
               <div>
-                <h4 className="font-medium text-gray-900 dark:text-white mb-3">
-                  Notes per page: {preferences.display.notesPerPage}
-                </h4>
+                                  <h4 className="font-medium mb-3" style={{ color: 'hsl(var(--foreground))' }}>
+                    Notes per page: {preferences.display.notesPerPage}
+                  </h4>
                 <Slider
                   value={[preferences.display.notesPerPage]}
                   onValueChange={([value]) => updateDisplay({ notesPerPage: value })}
@@ -389,8 +427,8 @@ export const SettingsModal = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Enable voice output</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Use ElevenLabs for text-to-speech</p>
+                    <h4 className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>Enable voice output</h4>
+                                          <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Use ElevenLabs for text-to-speech</p>
                   </div>
                   <input
                     type="checkbox"
@@ -401,12 +439,12 @@ export const SettingsModal = ({
                         enabled: e.target.checked 
                       } 
                     })}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">Voice selection</h4>
+                  <h4 className="font-medium mb-3" style={{ color: 'hsl(var(--foreground))' }}>Voice selection</h4>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'Professional female voice' },
@@ -425,19 +463,27 @@ export const SettingsModal = ({
                         })}
                         className={`p-3 rounded-lg border-2 transition-colors text-left ${
                           preferences.voice?.voiceId === voice.id
-                            ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                            ? 'border-emerald-600'
+                            : 'hover:opacity-80'
                         }`}
+                        style={{
+                          backgroundColor: preferences.voice?.voiceId === voice.id 
+                            ? 'hsl(158 64% 52% / 0.1)' 
+                            : 'transparent',
+                          borderColor: preferences.voice?.voiceId === voice.id 
+                            ? 'hsl(158 64% 52%)' 
+                            : 'hsl(var(--border))'
+                        }}
                       >
-                        <div className="font-medium text-gray-900 dark:text-white">{voice.name}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{voice.description}</div>
+                        <div className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>{voice.name}</div>
+                                                  <div className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>{voice.description}</div>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                  <h4 className="font-medium mb-3" style={{ color: 'hsl(var(--foreground))' }}>
                     Playback speed: {preferences.voice?.playbackSpeed ?? 1.0}x
                   </h4>
                   <Slider
@@ -456,7 +502,7 @@ export const SettingsModal = ({
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                  <h4 className="font-medium mb-3" style={{ color: 'hsl(var(--foreground))' }}>
                     Volume: {Math.round((preferences.voice?.volume ?? 0.8) * 100)}%
                   </h4>
                   <Slider
@@ -490,7 +536,7 @@ export const SettingsModal = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-t" style={{ borderColor: 'hsl(var(--border))' }}>
           <Button
             variant="outline"
                          onClick={() => {

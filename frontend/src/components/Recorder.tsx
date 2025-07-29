@@ -201,7 +201,7 @@ export const Recorder = () => {
           <Button
             onClick={handleStartRecording}
             disabled={isProcessing}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg flex items-center space-x-2"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg flex items-center space-x-2"
             size="lg"
           >
             <Mic className="w-5 h-5" />
