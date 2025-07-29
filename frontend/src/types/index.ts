@@ -15,6 +15,7 @@ export interface RecordingState {
   isPaused: boolean;
   duration: number;
   audioBlob?: Blob;
+  stream?: MediaStream;
 }
 
 export interface TranscriptionResult {

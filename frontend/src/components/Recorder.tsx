@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Mic, Square, Pause, Play, Loader2 } from 'lucide-react';
+import { Mic, Square, Pause, Play, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRecorder } from '@/hooks/useRecorder';
 import { CostDisplay } from '@/components/CostDisplay';
+import { AudioVisualizer } from '@/components/AudioVisualizer';
+import { RecordingQualityIndicator } from '@/components/RecordingQualityIndicator';
 import { formatDuration } from '@/lib/utils';
 import { CostBreakdown, TokenUsage } from '@/types';
 import { calculateTotalCost } from '@/lib/costCalculator';
@@ -23,9 +25,13 @@ export const Recorder = () => {
   const [costBreakdown, setCostBreakdown] = useState<CostBreakdown | null>(null);
   const [tokenUsage, setTokenUsage] = useState<TokenUsage | null>(null);
   const [showCostDisplay, setShowCostDisplay] = useState(false);
+  const [recordingError, setRecordingError] = useState<string | null>(null);
+  const [recordingQuality, setRecordingQuality] = useState<'good' | 'poor' | null>(null);
 
   const handleStartRecording = async () => {
     try {
+      setRecordingError(null);
+      setRecordingQuality(null);
       await startRecording();
       // Reset cost display when starting new recording
       setCostBreakdown(null);
@@ -33,6 +39,7 @@ export const Recorder = () => {
       setShowCostDisplay(false);
     } catch (error) {
       console.error('Failed to start recording:', error);
+      setRecordingError('Failed to start recording. Please check microphone permissions.');
     }
   };
 
@@ -40,10 +47,15 @@ export const Recorder = () => {
     try {
       const audioBlob = await stopRecording();
       if (audioBlob) {
+        // Simulate quality check
+        const quality = Math.random() > 0.3 ? 'good' : 'poor';
+        setRecordingQuality(quality);
+        
         await processRecording(audioBlob, recordingState.duration / 1000);
       }
     } catch (error) {
       console.error('Failed to stop recording:', error);
+      setRecordingError('Failed to stop recording. Please try again.');
     }
   };
 
@@ -98,73 +110,138 @@ export const Recorder = () => {
     }
   };
 
+  const getRecordingStatus = () => {
+    if (recordingError) return 'error';
+    if (isProcessing) return 'processing';
+    if (recordingState.isRecording) return 'recording';
+    if (recordingState.isPaused) return 'paused';
+    return 'idle';
+  };
+
+  const status = getRecordingStatus();
+
   return (
-    <div className="flex flex-col items-center space-y-4 p-6 bg-white rounded-lg shadow-md">
-      <div className="text-2xl font-semibold text-gray-800">
-        {isProcessing ? 'Processing...' : recordingState.isRecording ? 'Recording...' : 'Ready to Record'}
+    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-2">Voice Recorder</h2>
+        <p className="text-gray-600">Record your thoughts and transform them into organized notes</p>
       </div>
-      
-      {isProcessing && (
-        <div className="flex items-center gap-2 text-lg text-blue-600">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>{processingStep}</span>
+
+      {/* Audio Visualizer */}
+      <div className="mb-6">
+        <AudioVisualizer 
+          stream={recordingState.stream || null}
+          isRecording={recordingState.isRecording}
+          className="mb-4"
+        />
+      </div>
+
+      {/* Recording Status */}
+      <div className="flex items-center justify-center mb-6">
+        <div className="flex items-center space-x-4">
+          {/* Recording Duration */}
+          {recordingState.isRecording && (
+            <div className="text-center">
+              <div className="text-3xl font-mono text-gray-900">
+                {formatDuration(recordingState.duration)}
+              </div>
+              <div className="text-sm text-gray-600">Recording time</div>
+            </div>
+          )}
+
+          {/* Status Indicator */}
+          <div className="flex items-center space-x-2">
+            {status === 'recording' && (
+              <>
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-red-600 font-medium">Recording</span>
+              </>
+            )}
+            {status === 'paused' && (
+              <>
+                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <span className="text-yellow-600 font-medium">Paused</span>
+              </>
+            )}
+            {status === 'processing' && (
+              <>
+                <Loader2 className="w-4 h-4 text-blue-600 animate-spin"></Loader2>
+                <span className="text-blue-600 font-medium">{processingStep}</span>
+              </>
+            )}
+            {status === 'error' && (
+              <>
+                <AlertCircle className="w-4 h-4 text-red-600"></AlertCircle>
+                <span className="text-red-600 font-medium">Error</span>
+              </>
+            )}
+          </div>
+
+                     {/* Real-time Quality Indicator */}
+           <RecordingQualityIndicator 
+             stream={recordingState.stream || null}
+             isRecording={recordingState.isRecording}
+           />
         </div>
-      )}
-      
-      {recordingState.isRecording && !isProcessing && (
-        <div className="text-lg text-gray-600">
-          {formatDuration(recordingState.duration)}
+      </div>
+
+      {/* Error Message */}
+      {recordingError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+          <div className="flex items-center">
+            <AlertCircle className="w-5 h-5 text-red-600 mr-2"></AlertCircle>
+            <span className="text-red-800">{recordingError}</span>
+          </div>
         </div>
       )}
 
-      <div className="flex space-x-4">
-        {!recordingState.isRecording && !isProcessing ? (
+      {/* Recording Controls */}
+      <div className="flex justify-center space-x-4 mb-6">
+        {!recordingState.isRecording ? (
           <Button
             onClick={handleStartRecording}
+            disabled={isProcessing}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg flex items-center space-x-2"
             size="lg"
-            className="bg-red-500 hover:bg-red-600"
           >
-            <Mic className="w-5 h-5 mr-2" />
-            Start Recording
+            <Mic className="w-5 h-5" />
+            <span>Start Recording</span>
           </Button>
-        ) : recordingState.isRecording && !isProcessing ? (
+        ) : (
           <>
             <Button
               onClick={handlePauseResume}
               variant="outline"
+              className="px-6 py-3 rounded-lg flex items-center space-x-2"
               size="lg"
             >
               {recordingState.isPaused ? (
                 <>
-                  <Play className="w-5 h-5 mr-2" />
-                  Resume
+                  <Play className="w-4 h-4" />
+                  <span>Resume</span>
                 </>
               ) : (
                 <>
-                  <Pause className="w-5 h-5 mr-2" />
-                  Pause
+                  <Pause className="w-4 h-4" />
+                  <span>Pause</span>
                 </>
               )}
             </Button>
             
             <Button
               onClick={handleStopRecording}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2"
               size="lg"
-              className="bg-gray-500 hover:bg-gray-600"
             >
-              <Square className="w-5 h-5 mr-2" />
-              Stop Recording
+              <Square className="w-4 h-4" />
+              <span>Stop Recording</span>
             </Button>
           </>
-        ) : (
-          <div className="text-sm text-gray-500">
-            Please wait while we process your recording...
-          </div>
         )}
       </div>
 
       {/* Cost Display */}
-      {costBreakdown && tokenUsage && (
+      {showCostDisplay && costBreakdown && tokenUsage && (
         <CostDisplay
           costBreakdown={costBreakdown}
           tokenUsage={tokenUsage}
@@ -172,6 +249,17 @@ export const Recorder = () => {
           onClose={() => setShowCostDisplay(false)}
         />
       )}
+
+      {/* Recording Tips */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="text-sm font-medium text-blue-900 mb-2">Recording Tips</h3>
+        <ul className="text-sm text-blue-800 space-y-1">
+          <li>• Speak clearly and at a normal pace</li>
+          <li>• Minimize background noise for better transcription</li>
+          <li>• Keep the microphone at a consistent distance</li>
+          <li>• Use pause/resume for longer recordings</li>
+        </ul>
+      </div>
     </div>
   );
 }; 

@@ -18,11 +18,15 @@ export const useRecorder = () => {
       await recorder.startRecording();
       recorderRef.current = recorder;
 
+      // Get the stream from the recorder for visualization
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
       setRecordingState(prev => ({
         ...prev,
         isRecording: true,
         isPaused: false,
         duration: 0,
+        stream,
       }));
 
       // Start duration timer
@@ -56,6 +60,7 @@ export const useRecorder = () => {
         isRecording: false,
         isPaused: false,
         audioBlob,
+        stream: undefined,
       }));
 
       recorderRef.current = null;
