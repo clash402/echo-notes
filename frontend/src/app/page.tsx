@@ -128,10 +128,10 @@ export default function Home() {
     setDeletingNote(note);
   };
 
-  const handleSaveNote = async (note: Note) => {
+  const handleSaveNote = async (updatedNote: Partial<Note>) => {
     try {
       // This would call the actual API in production
-      console.log('Saving note:', note);
+      console.log('Saving note:', updatedNote);
       setEditingNote(null);
       showToast('Note updated successfully', 'success');
       refetch();
@@ -140,10 +140,12 @@ export default function Home() {
     }
   };
 
-  const handleConfirmDelete = async (note: Note) => {
+  const handleConfirmDelete = async () => {
+    if (!deletingNote) return;
+    
     try {
       // This would call the actual API in production
-      console.log('Deleting note:', note);
+      console.log('Deleting note:', deletingNote);
       setDeletingNote(null);
       showToast('Note deleted successfully', 'error');
       refetch();
@@ -194,36 +196,29 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="w-full px-6">
           <div className="flex items-center justify-between h-16">
+            {/* Left side - Logo and theme toggle */}
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Echo Notes</h1>
               <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleTheme}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  aria-label="Toggle theme"
-                >
-                  {preferences.theme === 'light' && <Sun className="w-5 h-5" />}
-                  {preferences.theme === 'dark' && <Moon className="w-5 h-5" />}
-                  {preferences.theme === 'system' && <Monitor className="w-5 h-5" />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowSettings(true)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  aria-label="Settings"
-                >
-                  <Settings className="w-5 h-5" />
-                </Button>
+                <Mic className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Echo Notes</h1>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleTheme}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                aria-label="Toggle theme"
+              >
+                {preferences.theme === 'light' && <Sun className="w-5 h-5" />}
+                {preferences.theme === 'dark' && <Moon className="w-5 h-5" />}
+                {preferences.theme === 'system' && <Monitor className="w-5 h-5" />}
+              </Button>
             </div>
 
-            {/* Voice Controls */}
+            {/* Right side - Voice controls and settings */}
             <div className="flex items-center space-x-2">
               <Button
                 variant="ghost"
@@ -247,6 +242,15 @@ export default function Home() {
                 aria-label="Voice settings"
               >
                 <Volume2 className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSettings(true)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5" />
               </Button>
             </div>
           </div>
@@ -308,7 +312,7 @@ export default function Home() {
               {hasMore && (
                 <div className="text-center py-8">
                   <Button
-                    onClick={fetchNextPage}
+                    onClick={() => fetchNextPage()}
                     disabled={isFetchingNextPage}
                     variant="outline"
                     className="w-full max-w-md"
@@ -331,6 +335,43 @@ export default function Home() {
           )}
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="sticky bottom-0 bg-white dark:bg-gray-800 py-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="w-full px-6">
+          <div className="flex flex-col items-center justify-center text-sm text-gray-500 dark:text-gray-400 space-y-2">
+            <div>
+              © 2025 Josh Courtney. All rights reserved.
+            </div>
+            <div className="flex items-center space-x-6">
+              <a 
+                href="https://joshcourtney.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              >
+                My Site
+              </a>
+              <a 
+                href="https://github.com/clash402" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              >
+                GitHub
+              </a>
+              <a 
+                href="https://www.linkedin.com/in/joshcourtney402/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              >
+                LinkedIn
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* Modals */}
       {editingNote && (
@@ -393,6 +434,7 @@ export default function Home() {
           message={toast.message}
           type={toast.type}
           onClose={closeToast}
+          isVisible={true}
         />
       )}
     </div>
