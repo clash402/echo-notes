@@ -50,19 +50,19 @@ export default function Home() {
     switch (action) {
       case 'start-recording':
         // Focus on recorder start button
-        document.querySelector('[data-action="start-recording"]')?.focus();
+        (document.querySelector('[data-action="start-recording"]') as HTMLElement)?.focus();
         break;
       case 'stop-recording':
         // Focus on recorder stop button
-        document.querySelector('[data-action="stop-recording"]')?.focus();
+        (document.querySelector('[data-action="stop-recording"]') as HTMLElement)?.focus();
         break;
       case 'focus-search':
         // Focus on search input
-        document.querySelector('[data-action="search-input"]')?.focus();
+        (document.querySelector('[data-action="search-input"]') as HTMLElement)?.focus();
         break;
       case 'focus-filter':
         // Focus on filter dropdown
-        document.querySelector('[data-action="filter-dropdown"]')?.focus();
+        (document.querySelector('[data-action="filter-dropdown"]') as HTMLElement)?.focus();
         break;
       case 'go-home':
         // Scroll to top
@@ -79,25 +79,39 @@ export default function Home() {
         break;
       case 'open-note':
         // Focus on first note card
-        document.querySelector('[data-action="note-card"]')?.focus();
+        (document.querySelector('[data-action="note-card"]') as HTMLElement)?.focus();
         break;
       case 'edit-note':
         // Focus on first edit button
-        document.querySelector('[data-action="edit-note"]')?.focus();
+        (document.querySelector('[data-action="edit-note"]') as HTMLElement)?.focus();
         break;
       case 'delete-note':
         // Focus on first delete button
-        document.querySelector('[data-action="delete-note"]')?.focus();
+        (document.querySelector('[data-action="delete-note"]') as HTMLElement)?.focus();
         break;
       case 'play-note':
         // Focus on first play button
-        document.querySelector('[data-action="play-note"]')?.focus();
+        (document.querySelector('[data-action="play-note"]') as HTMLElement)?.focus();
         break;
     }
   };
 
   useKeyboardShortcuts({
     enabled: preferences.keyboardShortcuts,
+    shortcuts: [
+      { key: 'n', description: 'New recording', action: 'start-recording', category: 'recording' },
+      { key: 'Escape', description: 'Stop recording', action: 'stop-recording', category: 'recording' },
+      { key: 's', description: 'Search notes', action: 'focus-search', category: 'navigation' },
+      { key: 'f', description: 'Filter notes', action: 'focus-filter', category: 'navigation' },
+      { key: 'h', description: 'Go home', action: 'go-home', category: 'navigation' },
+      { key: '?', description: 'Show shortcuts', action: 'show-shortcuts', category: 'general' },
+      { key: 't', description: 'Toggle theme', action: 'toggle-theme', category: 'general' },
+      { key: 'v', description: 'Toggle voice', action: 'toggle-voice', category: 'general' },
+      { key: 'Enter', description: 'Open note', action: 'open-note', category: 'editing' },
+      { key: 'Delete', description: 'Delete note', action: 'delete-note', category: 'editing' },
+      { key: 'e', description: 'Edit note', action: 'edit-note', category: 'editing' },
+      { key: 'p', description: 'Play note', action: 'play-note', category: 'editing' },
+    ],
     onShortcut: handleShortcutAction,
   });
 
@@ -164,7 +178,7 @@ export default function Home() {
     }
   };
 
-  const showToast = (message: string, type: ToastType) => {
+  const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
   };
 
@@ -279,7 +293,10 @@ export default function Home() {
                     key={note.id}
                     note={note}
                     onEdit={handleEditNote}
-                    onDelete={handleDeleteNote}
+                    onDelete={(noteId: string) => {
+                      const noteToDelete = notes.find(n => n.id === noteId);
+                      if (noteToDelete) handleDeleteNote(noteToDelete);
+                    }}
                     onSpeak={handleSpeakNote}
                     isSpeaking={speakingNoteId === note.id}
                     voiceEnabled={voiceEnabled}
