@@ -120,6 +120,13 @@ export interface UserPreferences {
     showCosts: boolean;
     notesPerPage: number;
   };
+  voice: {
+    enabled: boolean;
+    voiceId: string;
+    voiceName: string;
+    playbackSpeed: number;
+    volume: number;
+  };
 }
 
 export interface KeyboardShortcut {

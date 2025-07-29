@@ -9,7 +9,7 @@ import { NoteCard } from '@/components/NoteCard';
 import { EditNoteModal } from '@/components/EditNoteModal';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { Toast } from '@/components/Toast';
-import { VoiceSettingsModal } from '@/components/VoiceSettings';
+
 import { SettingsModal } from '@/components/SettingsModal';
 import { NoteCardSkeletonGrid } from '@/components/NoteCardSkeleton';
 import { useInfiniteNotes } from '@/hooks/useNotes';
@@ -29,7 +29,7 @@ export default function Home() {
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [deletingNote, setDeletingNote] = useState<Note | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+
   const [showSettings, setShowSettings] = useState(false);
   const [speakingNoteId, setSpeakingNoteId] = useState<string | null>(null);
 
@@ -199,23 +199,10 @@ export default function Home() {
       <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="w-full px-6">
           <div className="flex items-center justify-between h-16">
-            {/* Left side - Logo and theme toggle */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Mic className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Echo Notes</h1>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                aria-label="Toggle theme"
-              >
-                {preferences.theme === 'light' && <Sun className="w-5 h-5" />}
-                {preferences.theme === 'dark' && <Moon className="w-5 h-5" />}
-                {preferences.theme === 'system' && <Monitor className="w-5 h-5" />}
-              </Button>
+            {/* Left side - Logo */}
+            <div className="flex items-center space-x-2">
+              <Mic className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Echo Notes</h1>
             </div>
 
             {/* Right side - Voice controls and settings */}
@@ -234,15 +221,7 @@ export default function Home() {
                 {voiceEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
                 <span className="hidden sm:inline">{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowVoiceSettings(true)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                aria-label="Voice settings"
-              >
-                <Volume2 className="w-5 h-5" />
-              </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -394,15 +373,7 @@ export default function Home() {
         />
       )}
 
-      {showVoiceSettings && (
-        <VoiceSettingsModal
-          isOpen={showVoiceSettings}
-          onClose={() => setShowVoiceSettings(false)}
-          onSettingsChange={updateVoiceSettings}
-          currentSettings={voiceSettings}
-          onTestVoice={handleTestVoice}
-        />
-      )}
+
 
       {showSettings && (
         <SettingsModal
@@ -425,6 +396,7 @@ export default function Home() {
             { key: 'p', description: 'Play note', action: 'play-note', category: 'editing' },
           ]}
           onShortcutAction={handleShortcutAction}
+          onTestVoice={handleTestVoice}
         />
       )}
 

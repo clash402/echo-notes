@@ -22,6 +22,13 @@ const DEFAULT_PREFERENCES: UserPreferences = {
     showCosts: true,
     notesPerPage: 10,
   },
+  voice: {
+    enabled: true,
+    voiceId: '21m00Tcm4TlvDq8ikWAM',
+    voiceName: 'Rachel',
+    playbackSpeed: 1.0,
+    volume: 0.8,
+  },
 };
 
 const PREFERENCES_KEY = 'echo-notes-preferences';

@@ -13,6 +13,7 @@ interface SettingsModalProps {
   onPreferencesChange: (preferences: UserPreferences) => void;
   shortcuts: KeyboardShortcut[];
   onShortcutAction?: (action: string) => void;
+  onTestVoice?: (text?: string) => void;
 }
 
 export const SettingsModal = ({
@@ -23,7 +24,7 @@ export const SettingsModal = ({
   shortcuts,
   onShortcutAction
 }: SettingsModalProps) => {
-  const [activeTab, setActiveTab] = useState<'general' | 'accessibility' | 'shortcuts' | 'recording' | 'display'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'accessibility' | 'shortcuts' | 'recording' | 'display' | 'voice'>('general');
 
   if (!isOpen) return null;
 
@@ -81,13 +82,14 @@ export const SettingsModal = ({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700">
+        <div className="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
           {[
             { id: 'general', label: 'General', icon: Settings },
             { id: 'accessibility', label: 'Accessibility', icon: Accessibility },
             { id: 'shortcuts', label: 'Shortcuts', icon: Keyboard },
             { id: 'recording', label: 'Recording', icon: Volume2 },
             { id: 'display', label: 'Display', icon: Eye },
+            { id: 'voice', label: 'Voice', icon: Volume2 },
           ].map(({ id, label, icon: Icon }) => (
                          <button
                key={id}
@@ -381,37 +383,148 @@ export const SettingsModal = ({
               </div>
             </div>
           )}
+
+          {activeTab === 'voice' && (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Enable voice output</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Use ElevenLabs for text-to-speech</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={preferences.voice?.enabled ?? false}
+                    onChange={(e) => updatePreferences({ 
+                      voice: { 
+                        ...preferences.voice, 
+                        enabled: e.target.checked 
+                      } 
+                    })}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">Voice selection</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'Professional female voice' },
+                      { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', description: 'Professional male voice' },
+                      { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella', description: 'Friendly female voice' },
+                      { id: 'VR6AewLTigWG4xSOukaG', name: 'Josh', description: 'Professional male voice' },
+                    ].map((voice) => (
+                      <button
+                        key={voice.id}
+                        onClick={() => updatePreferences({ 
+                          voice: { 
+                            ...preferences.voice, 
+                            voiceId: voice.id,
+                            voiceName: voice.name
+                          } 
+                        })}
+                        className={`p-3 rounded-lg border-2 transition-colors text-left ${
+                          preferences.voice?.voiceId === voice.id
+                            ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                        }`}
+                      >
+                        <div className="font-medium text-gray-900 dark:text-white">{voice.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{voice.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                    Playback speed: {preferences.voice?.playbackSpeed ?? 1.0}x
+                  </h4>
+                  <Slider
+                    value={[preferences.voice?.playbackSpeed ?? 1.0]}
+                    onValueChange={([value]) => updatePreferences({ 
+                      voice: { 
+                        ...preferences.voice, 
+                        playbackSpeed: value 
+                      } 
+                    })}
+                    max={2.0}
+                    min={0.5}
+                    step={0.1}
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">
+                    Volume: {Math.round((preferences.voice?.volume ?? 0.8) * 100)}%
+                  </h4>
+                  <Slider
+                    value={[preferences.voice?.volume ?? 0.8]}
+                    onValueChange={([value]) => updatePreferences({ 
+                      voice: { 
+                        ...preferences.voice, 
+                        volume: value 
+                      } 
+                    })}
+                    max={1.0}
+                    min={0.0}
+                    step={0.1}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="pt-4">
+                  <Button
+                    onClick={() => onShortcutAction?.('test-voice')}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Volume2 className="w-4 h-4 mr-2" />
+                    Test Voice Settings
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700">
           <Button
             variant="outline"
-            onClick={() => {
-              // Reset to defaults
-              onPreferencesChange({
-                theme: 'system',
-                autoSave: true,
-                keyboardShortcuts: true,
-                accessibility: {
-                  highContrast: false,
-                  reducedMotion: false,
-                  fontSize: 'medium',
-                  screenReader: false,
-                },
-                recording: {
-                  autoStart: false,
-                  quality: 'medium',
-                  maxDuration: 10,
-                },
-                display: {
-                  compactMode: false,
-                  showTimestamps: true,
-                  showCosts: true,
-                  notesPerPage: 10,
-                },
-              });
-            }}
+                         onClick={() => {
+               // Reset to defaults
+               onPreferencesChange({
+                 theme: 'system',
+                 autoSave: true,
+                 keyboardShortcuts: true,
+                 accessibility: {
+                   highContrast: false,
+                   reducedMotion: false,
+                   fontSize: 'medium',
+                   screenReader: false,
+                 },
+                 recording: {
+                   autoStart: false,
+                   quality: 'medium',
+                   maxDuration: 10,
+                 },
+                 display: {
+                   compactMode: false,
+                   showTimestamps: true,
+                   showCosts: true,
+                   notesPerPage: 10,
+                 },
+                 voice: {
+                   enabled: true,
+                   voiceId: '21m00Tcm4TlvDq8ikWAM',
+                   voiceName: 'Rachel',
+                   playbackSpeed: 1.0,
+                   volume: 0.8,
+                 },
+               });
+             }}
           >
             Reset to Defaults
           </Button>
