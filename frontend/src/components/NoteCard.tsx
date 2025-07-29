@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Edit, Trash2, Tag } from 'lucide-react';
+import { Play, Edit, Trash2, Tag, Volume2, Loader2 } from 'lucide-react';
 import { Note } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -11,9 +11,20 @@ interface NoteCardProps {
   onPlay?: (note: Note) => void;
   onEdit?: (note: Note) => void;
   onDelete?: (noteId: string) => void;
+  onSpeak?: (note: Note) => Promise<void>;
+  isSpeaking?: boolean;
+  voiceEnabled?: boolean;
 }
 
-export const NoteCard = ({ note, onPlay, onEdit, onDelete }: NoteCardProps) => {
+export const NoteCard = ({ 
+  note, 
+  onPlay, 
+  onEdit, 
+  onDelete, 
+  onSpeak,
+  isSpeaking = false,
+  voiceEnabled = true
+}: NoteCardProps) => {
   const handlePlay = () => {
     if (onPlay && note.audioUrl) {
       onPlay(note);
@@ -32,6 +43,12 @@ export const NoteCard = ({ note, onPlay, onEdit, onDelete }: NoteCardProps) => {
     }
   };
 
+  const handleSpeak = async () => {
+    if (onSpeak) {
+      await onSpeak(note);
+    }
+  };
+
   return (
     <Card className="w-full hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -40,29 +57,55 @@ export const NoteCard = ({ note, onPlay, onEdit, onDelete }: NoteCardProps) => {
             {note.title}
           </CardTitle>
           <div className="flex space-x-2">
+            {/* Audio Playback Button */}
             {note.audioUrl && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handlePlay}
                 className="text-blue-600 hover:text-blue-700"
+                title="Play original audio"
               >
                 <Play className="w-4 h-4" />
               </Button>
             )}
+            
+            {/* Text-to-Speech Button */}
+            {voiceEnabled && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSpeak}
+                disabled={isSpeaking}
+                className="text-green-600 hover:text-green-700"
+                title="Read note aloud"
+              >
+                {isSpeaking ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+              </Button>
+            )}
+            
+            {/* Edit Button */}
             <Button
               variant="ghost"
               size="sm"
               onClick={handleEdit}
               className="text-gray-600 hover:text-gray-700"
+              title="Edit note"
             >
               <Edit className="w-4 h-4" />
             </Button>
+            
+            {/* Delete Button */}
             <Button
               variant="ghost"
               size="sm"
               onClick={handleDelete}
               className="text-red-600 hover:text-red-700"
+              title="Delete note"
             >
               <Trash2 className="w-4 h-4" />
             </Button>

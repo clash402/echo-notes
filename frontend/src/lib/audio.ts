@@ -1,8 +1,8 @@
-import RecordRTC from 'recordrtc';
-
+// Audio recorder with dynamic imports to avoid SSR issues
 export class AudioRecorder {
-  private recorder: RecordRTC | null = null;
+  private recorder: any = null;
   private stream: MediaStream | null = null;
+  private RecordRTC: any = null;
 
   async startRecording(): Promise<void> {
     if (typeof window === 'undefined') {
@@ -10,11 +10,17 @@ export class AudioRecorder {
     }
 
     try {
+      // Dynamically import RecordRTC only when needed
+      if (!this.RecordRTC) {
+        const recordRtcModule = await import('recordrtc');
+        this.RecordRTC = recordRtcModule.default;
+      }
+
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.recorder = new RecordRTC(this.stream, {
+      this.recorder = new this.RecordRTC(this.stream, {
         type: 'audio',
         mimeType: 'audio/webm',
-        recorderType: RecordRTC.StereoAudioRecorder,
+        recorderType: this.RecordRTC.StereoAudioRecorder,
         numberOfAudioChannels: 1,
         desiredSampRate: 16000,
       });

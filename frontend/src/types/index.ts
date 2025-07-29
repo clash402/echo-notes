@@ -73,4 +73,28 @@ export interface ProcessingSession {
   costBreakdown: CostBreakdown;
   status: 'processing' | 'completed' | 'error';
   createdAt: Date;
+}
+
+// New types for voice output controls
+export interface VoiceSettings {
+  enabled: boolean;
+  voiceId: string;
+  voiceName: string;
+  playbackSpeed: number;
+  volume: number;
+}
+
+export interface ElevenLabsVoice {
+  voice_id: string;
+  name: string;
+  category: string;
+  description?: string;
+  labels?: Record<string, string>;
+}
+
+export interface VoicePreferences {
+  defaultVoice: string;
+  defaultSpeed: number;
+  defaultVolume: number;
+  autoPlay: boolean;
 } 
