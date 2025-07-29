@@ -1,5 +1,6 @@
 import { TranscriptionResult, SummaryResult, Note, SearchFilters, SearchResult, CostBreakdown, TokenUsage } from '@/types';
 import { calculateTotalCost } from '@/lib/costCalculator';
+import { getAllAvailableTags } from '@/lib/tagGenerator';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -337,16 +338,11 @@ export class ApiClient {
 
   // Get all available tags for filter dropdown
   async getAvailableTags(): Promise<string[]> {
-    // For now, always use dummy tags to ensure the UI works
+    // For now, always use tag generator to ensure the UI works
     // TODO: Remove this when backend is fully operational
-    console.log('Using dummy tags for development');
+    console.log('Using tag generator for development');
     
-    const allTags = new Set<string>();
-    dummyNotes.forEach(note => {
-      note.tags?.forEach(tag => allTags.add(tag));
-    });
-    
-    return Array.from(allTags).sort();
+    return getAllAvailableTags();
 
     // Original backend logic (commented out for now)
     /*
@@ -359,18 +355,13 @@ export class ApiClient {
 
       return response.json();
     } catch (error) {
-      // Return dummy tags if backend is not available
-      console.warn('Backend not available, returning dummy tags:', error);
+      // Return tag generator tags if backend is not available
+      console.warn('Backend not available, returning tag generator tags:', error);
       
-      const allTags = new Set<string>();
-      dummyNotes.forEach(note => {
-        note.tags?.forEach(tag => allTags.add(tag));
-      });
-      
-      return Array.from(allTags).sort();
+      return getAllAvailableTags();
     }
     */
   }
 }
 
-export const apiClient = new ApiClient(); 
+export const apiClient = new ApiClient();

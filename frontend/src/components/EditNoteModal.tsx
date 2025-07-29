@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Tag, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TagSuggestions } from '@/components/TagSuggestions';
 import { Note } from '@/types';
 
 interface EditNoteModalProps {
@@ -84,11 +85,21 @@ export const EditNoteModal = ({
     }
   };
 
+  const handleAddSuggestedTag = (tag: string) => {
+    if (!tags.includes(tag)) {
+      setTags([...tags, tag]);
+    }
+  };
+
+  const handleRemoveSuggestedTag = (tag: string) => {
+    setTags(tags.filter(t => t !== tag));
+  };
+
   if (!isOpen || !note) return null;
 
   return (
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Edit Note</h2>
@@ -144,42 +155,20 @@ export const EditNoteModal = ({
             )}
           </div>
 
-          {/* Tags */}
+          {/* Tags Section */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Tags
             </label>
             
-            {/* Existing Tags */}
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
-                  >
-                    <Tag className="w-3 h-3" />
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="ml-1 text-blue-600 hover:text-blue-800"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Add New Tag */}
-            <div className="flex gap-2">
+            {/* Manual Tag Input */}
+            <div className="flex gap-2 mb-4">
               <input
                 type="text"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Add a tag..."
+                placeholder="Add a tag manually..."
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <Button
@@ -193,6 +182,19 @@ export const EditNoteModal = ({
                 Add
               </Button>
             </div>
+
+            {/* Auto-tagging Suggestions */}
+            <TagSuggestions
+              note={{
+                title,
+                content,
+                summary: note.summary,
+                transcript: note.transcript,
+              }}
+              currentTags={tags}
+              onAddTag={handleAddSuggestedTag}
+              onRemoveTag={handleRemoveSuggestedTag}
+            />
           </div>
 
           {/* Actions */}
