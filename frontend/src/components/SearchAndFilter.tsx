@@ -1,36 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Filter, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SearchFilters } from '@/types';
-import { apiClient } from '@/api/client';
+import { SearchFilters, Note } from '@/types';
 
 interface SearchAndFilterProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
+  notes: Note[];
 }
 
-export const SearchAndFilter = ({ filters, onFiltersChange }: SearchAndFilterProps) => {
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
+export const SearchAndFilter = ({ filters, onFiltersChange, notes }: SearchAndFilterProps) => {
   const [showFilters, setShowFilters] = useState(false);
-  const [isLoadingTags, setIsLoadingTags] = useState(false);
 
-  useEffect(() => {
-    const loadTags = async () => {
-      setIsLoadingTags(true);
-      try {
-        const tags = await apiClient.getAvailableTags();
-        setAvailableTags(tags);
-      } catch (error) {
-        console.error('Failed to load tags:', error);
-      } finally {
-        setIsLoadingTags(false);
-      }
-    };
-
-    loadTags();
-  }, []);
+  // Extract unique tags from the actual notes
+  const availableTags = useMemo(() => {
+    const allTags = notes.flatMap(note => note.tags || []);
+    return [...new Set(allTags)].sort();
+  }, [notes]);
 
   const handleSearchChange = (query: string) => {
     onFiltersChange({ ...filters, query });
@@ -75,7 +63,7 @@ export const SearchAndFilter = ({ filters, onFiltersChange }: SearchAndFilterPro
         <Button
           variant="outline"
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-2 cursor-pointer"
         >
           <Filter className="w-4 h-4" />
           <span>Filters</span>
@@ -106,16 +94,24 @@ export const SearchAndFilter = ({ filters, onFiltersChange }: SearchAndFilterPro
                 { value: 'newest' as const, label: 'Newest First' },
                 { value: 'oldest' as const, label: 'Oldest First' },
                 { value: 'title' as const, label: 'Title A-Z' },
-              ].map((option) => (
-                <Button
-                  key={option.value}
-                  variant={filters.sortBy === option.value ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleSortChange(option.value)}
-                >
-                  {option.label}
-                </Button>
-              ))}
+              ].map((option) => {
+                const isSelected = filters.sortBy === option.value;
+                return (
+                  <Button
+                    key={option.value}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSortChange(option.value)}
+                    style={{
+                      backgroundColor: isSelected ? 'hsl(var(--primary))' : 'transparent',
+                      color: isSelected ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                      borderColor: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--border))'
+                    }}
+                  >
+                    {option.label}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
@@ -124,26 +120,30 @@ export const SearchAndFilter = ({ filters, onFiltersChange }: SearchAndFilterPro
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Filter by Tags
             </label>
-            {isLoadingTags ? (
-              <div className="text-sm text-gray-500">Loading tags...</div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {availableTags.map((tag) => (
+            <div className="flex flex-wrap gap-2">
+              {availableTags.map((tag) => {
+                const isSelected = filters.tags.includes(tag);
+                return (
                   <Button
                     key={tag}
-                    variant={filters.tags.includes(tag) ? 'default' : 'outline'}
+                    variant="outline"
                     size="sm"
                     onClick={() => handleTagToggle(tag)}
                     className="text-xs"
+                    style={{
+                      backgroundColor: isSelected ? 'hsl(var(--primary))' : 'transparent',
+                      color: isSelected ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                      borderColor: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--border))'
+                    }}
                   >
                     {tag}
                   </Button>
-                ))}
-                {availableTags.length === 0 && (
-                  <div className="text-sm text-gray-500">No tags available</div>
-                )}
-              </div>
-            )}
+                );
+              })}
+              {availableTags.length === 0 && (
+                <div className="text-sm text-gray-500">No tags available</div>
+              )}
+            </div>
           </div>
 
           {/* Active Filters Summary */}

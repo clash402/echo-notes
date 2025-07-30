@@ -31,7 +31,7 @@ export const DeleteConfirmDialog = ({
   if (!isOpen || !note) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         {/* Header */}
         <div className="flex items-center gap-3 p-6 border-b border-gray-200">
@@ -68,6 +68,7 @@ export const DeleteConfirmDialog = ({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
+            className='cursor-pointer'
           >
             Cancel
           </Button>
@@ -75,7 +76,7 @@ export const DeleteConfirmDialog = ({
             variant="destructive"
             onClick={handleConfirm}
             disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-red-600 hover:bg-red-700 cursor-pointer"
           >
             {isLoading ? (
               'Deleting...'

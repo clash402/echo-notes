@@ -63,7 +63,7 @@ export const SettingsModal = ({
   const categories = getShortcutsByCategory();
 
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
         {/* Header */}
                   <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
@@ -542,7 +542,7 @@ export const SettingsModal = ({
                          onClick={() => {
                // Reset to defaults
                onPreferencesChange({
-                 theme: 'system',
+                 theme: 'light',
                  autoSave: true,
                  keyboardShortcuts: true,
                  accessibility: {

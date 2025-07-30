@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { UserPreferences, AccessibilitySettings } from '@/types';
 
 const DEFAULT_PREFERENCES: UserPreferences = {
-  theme: 'system',
+  theme: 'light',
   autoSave: true,
   keyboardShortcuts: true,
   accessibility: {

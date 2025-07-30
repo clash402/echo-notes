@@ -17,6 +17,7 @@ import { useVoiceOutput } from '@/hooks/useVoiceOutput';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { usePreferences } from '@/hooks/usePreferences';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { apiClient } from '@/api/client';
 import type { Note, SearchFilters } from '@/types';
 
 export default function Home() {
@@ -129,13 +130,16 @@ export default function Home() {
   };
 
   const handleSaveNote = async (updatedNote: Partial<Note>) => {
+    if (!editingNote) return;
+    
     try {
-      // This would call the actual API in production
-      console.log('Saving note:', updatedNote);
+      // Call the API to update the note
+      await apiClient.updateNote(editingNote.id, updatedNote);
       setEditingNote(null);
       showToast('Note updated successfully', 'success');
       refetch();
     } catch (error) {
+      console.error('Failed to update note:', error);
       showToast('Failed to update note', 'error');
     }
   };
@@ -144,12 +148,13 @@ export default function Home() {
     if (!deletingNote) return;
     
     try {
-      // This would call the actual API in production
-      console.log('Deleting note:', deletingNote);
+      // Call the API to delete the note
+      await apiClient.deleteNote(deletingNote.id);
       setDeletingNote(null);
       showToast('Note deleted successfully', 'error');
       refetch();
     } catch (error) {
+      console.error('Failed to delete note:', error);
       showToast('Failed to delete note', 'error');
     }
   };
@@ -211,7 +216,7 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={toggleVoiceOutput}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 cursor-pointer"
                 style={{ 
                   color: voiceEnabled ? 'hsl(158 64% 52%)' : 'hsl(var(--muted-foreground))'
                 }}
@@ -225,7 +230,7 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSettings(true)}
-                className="hover:opacity-80"
+                className="hover:opacity-80 cursor-pointer"
                 style={{ color: 'hsl(var(--muted-foreground))' }}
                 aria-label="Settings"
               >
@@ -246,7 +251,7 @@ export default function Home() {
 
         {/* Search and Filter */}
         <div className="mb-6">
-          <SearchAndFilter filters={filters} onFiltersChange={handleFiltersChange} />
+          <SearchAndFilter filters={filters} onFiltersChange={handleFiltersChange} notes={notes} />
         </div>
 
         {/* Notes Grid */}

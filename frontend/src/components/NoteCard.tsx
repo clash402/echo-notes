@@ -63,7 +63,7 @@ export const NoteCard = ({
                 variant="ghost"
                 size="sm"
                 onClick={handlePlay}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-blue-600 hover:text-blue-700 cursor-pointer"
                 title="Play original audio"
               >
                 <Play className="w-4 h-4" />
@@ -77,7 +77,7 @@ export const NoteCard = ({
                 size="sm"
                 onClick={handleSpeak}
                 disabled={isSpeaking}
-                className="text-green-600 hover:text-green-700"
+                className="text-green-600 hover:text-green-700 cursor-pointer"
                 title="Read note aloud"
               >
                 {isSpeaking ? (
@@ -93,7 +93,7 @@ export const NoteCard = ({
               variant="ghost"
               size="sm"
               onClick={handleEdit}
-              className="text-gray-600 hover:text-gray-700"
+              className="text-gray-600 hover:text-gray-700 cursor-pointer"
               title="Edit note"
             >
               <Edit className="w-4 h-4" />
@@ -104,7 +104,7 @@ export const NoteCard = ({
               variant="ghost"
               size="sm"
               onClick={handleDelete}
-              className="text-red-600 hover:text-red-700"
+              className="text-red-600 hover:text-red-700 cursor-pointer"
               title="Delete note"
             >
               <Trash2 className="w-4 h-4" />
