@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Echo Notes",
   description: "Record, transcribe, and organize your thoughts",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
